@@ -412,10 +412,10 @@
                 chatHistory.appendChild(loadingDiv);
                 chatHistory.scrollTop = chatHistory.scrollHeight;
 
-                let apiRoute = "https://edugen-backend.onrender.com/api/chat";
-                if (currentMode === "resume") apiRoute = "https://edugen-backend.onrender.com/api/resume";
-                if (currentMode === "skills") apiRoute = "https://edugen-backend.onrender.com/api/skills";
-                if (currentMode === "interview") apiRoute = "https://edugen-backend.onrender.com/api/mock_interview";
+                let apiRoute = "https://edugen-full.onrender.com/api/chat";
+                if (currentMode === "resume") apiRoute = "https://edugen-full.onrender.com/api/resume";
+                if (currentMode === "skills") apiRoute = "https://edugen-full.onrender.com/api/skills";
+                if (currentMode === "interview") apiRoute = "https://edugen-full.onrender.com/api/mock_interview";
 
                 const formData = new FormData();
                 formData.append('message', message);

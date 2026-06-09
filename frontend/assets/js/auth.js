@@ -1,5 +1,5 @@
 // Ensure this matches your Python port (5001)
-const API_BASE_URL = "https://edugen-backend.onrender.com"; 
+const API_BASE_URL = "https://edugen-full.onrender.com"; 
 
 document.addEventListener("DOMContentLoaded", () => {
     // --- UI Elements ---

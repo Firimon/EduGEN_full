@@ -247,7 +247,7 @@
                 }
 
                 try {
-                    const response = await fetch(`https://edugen-backend.onrender.com/api/saved_jobs/${user.id}`);
+                    const response = await fetch(`https://edugen-full.onrender.com/api/saved_jobs/${user.id}`);
                     const data = await response.json();
 
                     if (data.success && data.jobs.length > 0) {
@@ -473,7 +473,7 @@
 
             // Fetch analysis from your Python Backend
             try {
-                const response = await fetch("https://edugen-backend.onrender.com/api/analyze_job", {
+                const response = await fetch("https://edugen-full.onrender.com/api/analyze_job", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
