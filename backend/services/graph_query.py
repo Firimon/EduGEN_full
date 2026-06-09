@@ -19,20 +19,27 @@ graph = Neo4jGraph(
     database=os.getenv("NEO4J_DATABASE")
 )
 
-# 3. Initialize BOTH Brains (Cloud & Local)
-print("☁️ Waking up primary Cloud Gemma 4 model...")
+# 3. Dynamic Host Resolution
+# When deployed on Render, this reads your configured server URL.
+# When running locally on your laptop, it defaults back to localhost.
+OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+
+# 4. Initialize BOTH Brains (Cloud & Local)
+print(f"☁️ Connecting to primary Cloud Gemma 4 model via: {OLLAMA_BASE_URL}")
 cloud_llm = ChatOllama(
     model="gemma4:31b-cloud", 
+    base_url=OLLAMA_BASE_URL,
     temperature=0 
 )
 
-print("💻 Waking up offline Local Gemma model for backup...")
+print(f"💻 Connecting to offline Local Gemma model via: {OLLAMA_BASE_URL}")
 local_llm = ChatOllama(
-    model="gemma4", # This runs completely offline on the RTX 4050
+    model="gemma4", 
+    base_url=OLLAMA_BASE_URL,
     temperature=0 
 )
 
-# 4. Give AE-GEN a Persona!
+# 5. Give AE-GEN a Persona!
 qa_template = """You are AE-GEN, an expert AI career assistant for EduGEN.
 
 Database Context:
@@ -53,7 +60,7 @@ QA_PROMPT = PromptTemplate(
     template=qa_template
 )
 
-# 5. Create the GraphRAG Engine (Defaults to Cloud)
+# 6. Create the GraphRAG Engine
 chain = GraphCypherQAChain.from_llm(
     graph=graph,
     cypher_llm=cloud_llm,
@@ -104,8 +111,8 @@ def ask_edugen(question):
             return answer
             
         except Exception as wifi_error:
-            # ATTEMPT 3: Wi-Fi is completely down. Route to the local offline GPU.
-            print(f"\n🚨 Wi-Fi / Cloud Connection Lost! ({wifi_error}). Switching to OFFLINE LOCAL AI...")
+            # ATTEMPT 3: Wi-Fi or Cloud connection down. Route to backup local target.
+            print(f"\n🚨 Connection Lost! ({wifi_error}). Switching to OFFLINE LOCAL AI...")
             
             offline_response = local_llm.invoke(fallback_prompt)
             answer = offline_response.content
