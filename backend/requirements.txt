@@ -18,3 +18,4 @@ langchain-google-genai
 neo4j
 langchain-ollama
 langchain-neo4j
+crewai
