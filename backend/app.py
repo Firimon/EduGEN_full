@@ -20,6 +20,14 @@ load_dotenv()
 
 app = Flask(__name__)
 
+@app.route('/')
+def home():
+    return {
+        "status": "success", 
+        "message": "EduGEN Backend is officially LIVE and running!",
+        "version": "1.0"
+    }, 200
+
 # --- CONFIGURATION ---
 # Allow all origins to prevent browser CORS blocking
 CORS(app, resources={r"/*": {"origins": "*"}})
@@ -976,6 +984,8 @@ def generate_assessment_question():
     except Exception as e:
         print(f"🚨 AI Generation Error: {e}")
         return jsonify({"success": False, "error": str(e)}), 500
+    
+    
 
     
 
