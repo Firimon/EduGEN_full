@@ -1,0 +1,16 @@
+# --- Core Backend ---
+Flask
+Flask-Cors
+mysql-connector-python
+Werkzeug
+Flask-Mail
+itsdangerous
+
+# --- Security ---
+python-dotenv
+
+# --- GraphRAG & AI Stack ---
+langchain
+langchain-community
+langchain-google-genai
+neo4j

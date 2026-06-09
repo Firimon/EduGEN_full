@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EduGEN – Sign Up</title>
+    <link rel="stylesheet" href="assets/css/styles.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+        /* --- GLOBAL LAYOUT --- */
+        body {
+            background-color: #020617; 
+            font-family: 'Poppins', sans-serif;
+            margin: 0; padding: 0;
+            color: #fff;
+            display: flex; flex-direction: column; min-height: 100vh;
+        }
+
+        /* --- HEADER STYLES (MATCHING ABOUT_US / JOB ENGINE) --- */
+        .top-nav {
+            display: flex; align-items: center; 
+            padding: 0 40px; height: 90px;
+            background: rgba(15, 23, 42, 0.9);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            position: relative; z-index: 100;
+        }
+
+        .logo-img {
+            height: 55px; width: auto; border-radius: 50%; object-fit: cover;
+            border: 2px solid rgba(79, 70, 229, 0.3); box-shadow: 0 0 15px rgba(79, 70, 229, 0.3);
+            transition: transform 0.3s ease;
+        }
+        .logo-img:hover { transform: scale(1.05); }
+
+        /* Navigation Links */
+        .nav-links a, .nav-auth a, .user-nav a {
+            text-decoration: none;
+            color: #94a3b8; /* Default Grey */
+            font-weight: 500; font-size: 0.95rem;
+            position: relative;
+            transition: color 0.3s;
+            padding-bottom: 5px;
+            display: inline-block;
+        }
+
+        .nav-links a:hover, .nav-auth a:hover, .user-nav a:hover {
+            color: white;
+        }
+
+        /* Animated Line */
+        .nav-links a::after, .nav-auth a::after, .user-nav a::after {
+            content: '';
+            position: absolute;
+            bottom: -6px; left: 0;
+            width: 0%; height: 2px; /* Thin line */
+            background: linear-gradient(90deg, #22c55e, #6366f1);
+            transition: width 0.3s ease-in-out;
+            box-shadow: 0 0 10px rgba(34, 197, 94, 0.5);
+        }
+
+        .nav-links a:hover::after, .nav-auth a:hover::after, .user-nav a:hover::after {
+            width: 100%;
+        }
+
+        /* Active State */
+        a.active { color: white !important; font-weight: 600; }
+        a.active::after { width: 100% !important; }
+
+        /* --- SIGNUP PAGE SPECIFICS --- */
+        .page-shell {
+            flex: 1; display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            padding: 40px 20px;
+        }
+
+        .signup-header { text-align: center; margin-bottom: 30px; max-width: 600px; }
+        .signup-badge { background: rgba(79, 70, 229, 0.1); color: #818cf8; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; border: 1px solid rgba(79, 70, 229, 0.2); }
+        .signup-points { list-style: none; padding: 0; text-align: left; display: inline-block; color: #94a3b8; font-size: 0.9rem; margin-top: 15px; }
+        .signup-points li { margin-bottom: 8px; position: relative; padding-left: 20px; }
+        .signup-points li::before { content: '✓'; color: #22c55e; position: absolute; left: 0; }
+
+        .signup-card {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            width: 100%; max-width: 450px;
+        }
+
+        /* Form Inputs */
+        .auth-form label { display: block; margin-bottom: 15px; color: #cbd5e1; font-size: 0.9rem; }
+        .auth-form input {
+            width: 100%; padding: 12px; margin-top: 5px;
+            background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(148, 163, 184, 0.3);
+            border-radius: 10px; color: white; box-sizing: border-box;
+        }
+        .auth-form input:focus { outline: none; border-color: #38bdf8; }
+
+        /* Password Eye */
+        .password-row { position: relative; }
+        .eye-toggle {
+            position: absolute; right: 12px; top: 50%; transform: translateY(-30%);
+            background: none; border: none; cursor: pointer; padding: 0;
+        }
+
+        .btn {
+            width: 100%; padding: 12px; margin-top: 10px;
+            background: linear-gradient(135deg, #a855f7, #6366f1);
+            color: white; border: none; border-radius: 12px;
+            font-size: 1rem; cursor: pointer; font-weight: 600;
+        }
+        .btn:hover { opacity: 0.9; }
+    </style>
+</head>
+<body>
+
+    <header class="top-nav">
+        <div class="logo">
+            <img src="assets/picture/logoEdugen.png" alt="EduGEN Logo" class="logo-img" />
+        </div>
+
+        <div style="display: flex; justify-content: space-between; flex: 1; align-items: center; width: 100%;">
+            <nav class="nav-links" style="margin-left: 40px; gap: 32px;">
+                <a href="home.html">Home</a>
+                <a href="assessment.html">Assessment</a>
+                <a href="dashboard.html">Dashboard</a> 
+                <a href="lab.html">AI Lab</a>
+            </nav>
+
+            <div class="nav-auth" style="display: flex; align-items: center; gap: 20px;">
+                <a href="about_us.html" style="color: #94a3b8;">About Us</a>
+                <span style="width: 1px; height: 20px; background: rgba(255,255,255,0.2);"></span>
+
+                <a href="login.html" id="navLoginLink">Login</a>
+                <a href="signup.html" id="navSignupLink" class="active btn" style="padding: 6px 20px; width: auto; margin-top: 0;">Sign Up</a>
+
+                <a href="job-engine.html" id="navJobs" class="auth-only" style="display:none;">Jobs</a>
+                <div class="user-nav auth-only" id="userNavContainer" style="display:none; margin: 0; gap: 20px; align-items: center;">
+                    <a href="profile.html" id="profileLink">Profile</a>
+                    <a href="#" id="logoutLink">Logout</a>
+                    <span id="welcomeText" class="welcome-text" style="margin-left: 10px; color: #22c55e; font-weight: 600;"></span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="page-shell signup-page">
+        <section class="signup-header">
+            <span class="signup-badge">Step 1 · Create your account</span>
+            <h1 style="font-size: 2rem; margin-top: 15px;">Create an EduGEN Account</h1>
+            <p style="color: #94a3b8;">
+                Sign up as a learner and start exploring AI-powered career paths tailored 
+                to your strengths, interests, and goals.
+            </p>
+            <ul class="signup-points">
+                <li>Save your favourite career paths to revisit later.</li>
+                <li>View a simple dashboard with your competency profile.</li>
+                <li>Soon: get personalised LLM + RAG recommendations.</li>
+            </ul>
+        </section>
+
+        <section class="signup-wrapper">
+            <article class="card signup-card">
+                <h3 style="margin-top: 0;">Sign Up</h3>
+                <p class="small text-muted" style="margin-bottom:14px; color: #64748b; font-size: 0.85rem;">
+                    It only takes a minute. You can always update your details later.
+                </p>
+
+                <form id="registerForm" class="auth-form">
+                    <label>
+                        Full Name
+                        <input type="text" id="regName" required placeholder="e.g. Aisyah Rahman" />
+                    </label>
+
+                    <label>
+                        Email
+                        <input type="email" id="regEmail" required placeholder="you@example.com" />
+                    </label>
+
+                    <label>
+                        Password
+                        <div class="password-row">
+                            <input type="password" id="regPassword" required minlength="6" placeholder="At least 6 characters" />
+                            <button type="button" class="eye-toggle" id="togglePassword" aria-label="Toggle password visibility">
+                                <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+                                    <path d="M12 5C7 5 2.73 8.11 1 12c1.73 3.89 6 7 11 7s9.27-3.11 11-7c-1.73-3.89-6-7-11-7zm0 11a4 4 0 1 1 0-8 4 4 0 0 1 0 8z" fill="#cbd5e1"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </label>
+
+                    <p class="small text-muted" style="margin-top:4px; font-size: 0.8rem; color: #64748b;">
+                        Use a password that you don’t use anywhere else.
+                    </p>
+
+                    <p class="small text-muted" style="margin:10px 0 18px; font-size: 0.8rem; color: #64748b;">
+                        By creating an account, you agree to let EduGEN store your account details securely.
+                    </p>
+
+                    <button type="submit" class="btn signup-submit">
+                        Create Account
+                    </button>
+
+                    <p class="small text-muted" id="registerMessage" style="color: #ef4444; margin-top: 10px;"></p>
+                </form>
+
+                <p class="small text-muted" style="margin-top:18px; text-align:center; color: #94a3b8; font-size: 0.9rem;">
+                    Already have an account?
+                    <a href="login.html" style="color: #a855f7; text-decoration: none;">Login here</a>.
+                </p>
+            </article>
+        </section>
+    </main>
+
+    <footer class="footer" style="text-align: center; padding: 20px; color: #64748b;">
+        <p>© <span id="currentYear"></span> EduGEN.</p>
+    </footer>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            /* ===== Footer year ===== */
+            const yearEl = document.getElementById("currentYear");
+            if (yearEl) yearEl.textContent = new Date().getFullYear();
+
+            /* ===== Password eye toggle ===== */
+            const pwInput = document.getElementById("regPassword");
+            const eyeBtn = document.getElementById("togglePassword");
+            const eyeIcon = document.getElementById("eyeIcon");
+
+            if (pwInput && eyeBtn && eyeIcon) {
+                eyeBtn.addEventListener("click", () => {
+                    const isHidden = pwInput.type === "password";
+                    pwInput.type = isHidden ? "text" : "password";
+                    eyeIcon.setAttribute("fill", isHidden ? "#ffffff" : "#cbd5e1");
+                });
+            }
+
+            /* ===== Simple session UI for nav ===== */
+            const loginLink = document.getElementById("navLoginLink");
+            const signupLink = document.getElementById("navSignupLink");
+            const welcomeText = document.getElementById("welcomeText");
+            const profileLink = document.getElementById("profileLink");
+            const logoutLink = document.getElementById("logoutLink");
+            const navJobs = document.getElementById("navJobs");
+            const userNavContainer = document.getElementById("userNavContainer");
+
+            let user = null;
+            try {
+                const raw = localStorage.getItem("edugen_user");
+                user = raw ? JSON.parse(raw) : null;
+            } catch { user = null; }
+
+            if (user && user.name) {
+                // Logged In
+                if (loginLink) loginLink.style.display = "none";
+                if (signupLink) signupLink.style.display = "none";
+                if (navJobs) navJobs.style.display = "block";
+                if (userNavContainer) userNavContainer.style.display = "flex";
+                if (welcomeText) welcomeText.textContent = "Hi, " + user.name;
+            } else {
+                // Not Logged In
+                if (loginLink) loginLink.style.display = "inline-block";
+                if (signupLink) signupLink.style.display = "inline-block";
+                if (navJobs) navJobs.style.display = "none";
+                if (userNavContainer) userNavContainer.style.display = "none";
+            }
+
+            logoutLink?.addEventListener("click", (e) => {
+                e.preventDefault();
+                localStorage.removeItem("edugen_user");
+                window.location.href = "home.html";
+            });
+        });
+    </script>
+
+    <script src="assets/js/auth.js"></script>
+</body>
+</html>

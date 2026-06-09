@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Lab - EduGEN</title>
+    <link rel="stylesheet" href="assets/css/styles.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+        /* --- LAYOUT FIXES --- */
+        body { display: flex; flex-direction: column; min-height: 100vh; }
+        main { flex: 1; width: 100%; max-width: 1200px; margin: 0 auto; }
+
+        /* --- LOGO STYLES --- */
+        .logo-img { height: 55px; width: auto; border-radius: 50%; object-fit: cover; border: 2px solid rgba(79, 70, 229, 0.3); box-shadow: 0 0 15px rgba(79, 70, 229, 0.3); transition: transform 0.3s ease; }
+        .logo-img:hover { transform: scale(1.05); }
+
+        /* --- 4-COLUMN RESPONSIVE GRID FOR TOOLS --- */
+        .tools-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 40px; }
+
+        /* --- AI LAB STYLES --- */
+        .chat-interface { display: flex; flex-direction: column; height: 550px; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(148, 163, 184, 0.2); border-radius: 16px; overflow: hidden; transition: box-shadow 0.3s ease; }
+        .chat-header { padding: 15px 20px; background: rgba(15, 23, 42, 0.9); border-bottom: 1px solid rgba(148, 163, 184, 0.2); display: flex; justify-content: space-between; align-items: center; }
+        .chat-history { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; background-image: radial-gradient(circle at center, rgba(79, 70, 229, 0.05) 0%, transparent 70%); scroll-behavior: smooth; }
+
+        /* Chat Bubbles */
+        .msg { max-width: 80%; padding: 12px 16px; border-radius: 12px; font-size: 0.9rem; line-height: 1.5; animation: fadeIn 0.3s ease; word-wrap: break-word; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .msg-ai { align-self: flex-start; background: rgba(37, 99, 235, 0.1); color: #dbeafe; border: 1px solid rgba(37, 99, 235, 0.2); border-top-left-radius: 2px; }
+        .msg-user { align-self: flex-end; background: var(--primary); color: white; border-bottom-right-radius: 2px; }
+
+        /* File Attachment & Input Area Styles */
+        .chat-input-wrapper { background: rgba(15, 23, 42, 0.9); border-top: 1px solid rgba(148, 163, 184, 0.2); display: flex; flex-direction: column; }
+        .attachment-preview { display: none; padding: 10px 20px 0 20px; font-size: 0.85rem; color: #a855f7; font-weight: 500; align-items: center; }
+        .remove-file-btn { cursor: pointer; color: #f43f5e; margin-left: 10px; font-weight: bold; background: rgba(244, 63, 94, 0.1); padding: 2px 8px; border-radius: 50%; transition: 0.2s; }
+        .remove-file-btn:hover { background: #f43f5e; color: white; }
+        
+        .chat-input-controls { padding: 15px; display: flex; gap: 10px; align-items: center; }
+        .icon-btn { display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.05); border: 1px solid rgba(148, 163, 184, 0.3); border-radius: 8px; width: 45px; height: 45px; cursor: pointer; transition: 0.3s; font-size: 1.2rem; }
+        .icon-btn:hover { background: rgba(168, 85, 247, 0.2); border-color: #a855f7; }
+        
+        /* Pulse animation when listening to voice */
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.7); border-color: #f43f5e; background: rgba(244, 63, 94, 0.2); }
+            70% { box-shadow: 0 0 0 10px rgba(244, 63, 94, 0); border-color: #f43f5e; background: rgba(244, 63, 94, 0.1); }
+            100% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0); border-color: rgba(148, 163, 184, 0.3); background: rgba(255,255,255,0.05); }
+        }
+        .mic-listening { animation: pulse-red 1.5s infinite; color: #f43f5e; }
+
+        /* --- TOOL CARD ANIMATIONS & DESIGN --- */
+        .tool-card { cursor: pointer; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); border: 2px solid transparent; background: rgba(30, 41, 59, 0.6); display: flex; flex-direction: column; }
+        .tool-card:hover { transform: translateY(-3px); border-color: rgba(79, 70, 229, 0.4); }
+        .tool-card.active-tool { border-color: var(--primary); box-shadow: 0 10px 30px rgba(79, 70, 229, 0.35); transform: translateY(-8px); background: rgba(30, 41, 59, 0.95); }
+        .tool-card.active-tool .tool-btn { background: var(--primary); color: white; border-color: var(--primary); font-weight: 600; }
+        .tool-icon { font-size: 1.5rem; margin-bottom: 10px; display: inline-block; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 10px; width: fit-content; }
+    </style>
+</head>
+<body>
+
+    <header class="top-nav">
+        <div class="logo">
+            <img src="assets/picture/logoEdugen.png" alt="EduGEN Logo" class="logo-img" />
+        </div>
+        <div style="display: flex; justify-content: space-between; flex: 1; align-items: center; width: 100%;">
+            <nav class="nav-links" style="margin-left: 40px; gap: 32px;">
+                <a href="home.html">Home</a>
+                <a href="assessment.html">Assessment</a> 
+                <a href="dashboard.html">Dashboard</a>
+                <a href="lab.html" class="active">AI Lab</a>
+                <a href="feedback.html">Feedback</a>
+            </nav>
+            <div class="nav-auth" style="display: flex; align-items: center; gap: 20px;">
+                <a href="about_us.html" style="color: #94a3b8; text-decoration: none; font-size: 0.9rem; margin-right: 10px;">About Us</a>
+                <a href="login.html" id="navLoginLink">Login</a>
+                <a href="signup.html" id="navSignupLink" class="btn" style="padding: 6px 20px;">Sign Up</a>
+                <a href="job-engine.html" id="navJobs" class="auth-only" style="display:none;">Jobs</a>
+                <div class="user-nav auth-only" id="userNavContainer" style="display:none; margin: 0;">
+                    <a href="profile.html" id="profileLink">Profile</a>
+                    <a href="#" id="logoutLink">Logout</a>
+                    <span id="welcomeText" class="welcome-text" style="margin-left: 10px; color: var(--accent);"></span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="section-header" style="margin-top: 40px;">
+            <h2>EduGEN AI Workspace</h2>
+            <p>Explore experimental tools powered by <span style="color: var(--primary); font-weight: 600;">AE-GEN</span>.</p>
+        </section>
+
+        <div class="tools-grid">
+            <div class="card tool-card active-tool" id="card-general">
+                <span class="tool-icon">💬</span>
+                <h3>AE-GEN Chat</h3>
+                <p style="flex-grow: 1;">Ask general career questions, explore industry trends, or seek open-ended advice.</p>
+                <button class="btn-outline tool-btn" style="margin-top: 10px; width: 100%;">● Active Mode</button>
+            </div>
+            <div class="card tool-card" id="card-resume">
+                <span class="tool-icon">📝</span>
+                <h3>Resume Optimizer</h3>
+                <p style="flex-grow: 1;">Upload your CV and let AE-GEN suggest stronger action verbs.</p>
+                <button class="btn-outline tool-btn" style="margin-top: 10px; width: 100%;">Select Tool</button>
+            </div>
+            <div class="card tool-card" id="card-interview">
+                <span class="tool-icon">🤖</span>
+                <h3>Mock Interviewer</h3>
+                <p style="flex-grow: 1;">Upload your CV to simulate a highly specific technical interview.</p>
+                <button class="btn-outline tool-btn" style="margin-top: 10px; width: 100%;">Select Tool</button>
+            </div>
+            <div class="card tool-card" id="card-skills">
+                <span class="tool-icon">📊</span>
+                <h3>Skill Gap Analyzer</h3>
+                <p style="flex-grow: 1;">Upload your CV to instantly compare your skills against 2026 market demand.</p>
+                <button class="btn-outline tool-btn" style="margin-top: 10px; width: 100%;">Select Tool</button>
+            </div>
+        </div>
+
+        <div class="chat-interface" id="chatContainer" style="box-shadow: 0 0 20px #a855f720;">
+            <div class="chat-header">
+                <div>
+                    <strong>System:</strong> <span id="systemTitle" style="color: #a855f7; font-weight: 600; transition: color 0.3s;">AE-GEN Chat</span>
+                </div>
+                <div style="font-size: 0.8rem; color: var(--muted);">
+                    <span style="color: var(--accent);">● Online</span>
+                </div>
+            </div>
+
+            <div class="chat-history" id="chatHistory">
+                <div class="msg msg-ai">
+                    💬 <strong>AE-GEN Chat Active!</strong> <br><br>Hello! I am AE-GEN. You can ask me general career questions or seek advice.
+                </div>
+            </div>
+
+            <div class="chat-input-wrapper">
+                <div class="attachment-preview" id="attachmentPreview">
+                    📎 <span id="attachmentName">my_resume.pdf</span>
+                    <span class="remove-file-btn" onclick="removeAttachment()">✕</span>
+                </div>
+                
+                <div class="chat-input-controls">
+                    <input type="file" id="cvUpload" accept=".pdf,.doc,.docx,.txt" style="display: none;">
+                    
+                    <label id="attachBtn" for="cvUpload" class="icon-btn" title="Upload your CV" style="display: none;">
+                        📎
+                    </label>
+                    
+                    <button id="micBtn" class="icon-btn" title="Click to speak" style="display: none;">
+                        🎤
+                    </button>
+                    
+                    <input type="text" id="aiInput" class="ai-input" placeholder="Type a message..." style="margin: 0; flex: 1; height: 45px;">
+                    <button id="sendBtn" class="btn" style="height: 45px;">Send</button>
+                </div>
+            </div>
+        </div>
+        
+        <div style="margin-top: 20px; text-align: center; color: var(--muted); font-size: 0.8rem;">
+            <p>AE-GEN is in prototype phase. Responses may vary.</p>
+        </div>
+    </main>
+
+    <footer class="footer">
+        © 2026 EduGEN. AI-Powered Career Intelligence.
+    </footer>
+
+    <script src="assets/js/auth.js"></script>
+    <script>
+        // --- VOICE RECOGNITION (WEB SPEECH API) ---
+        const micBtn = document.getElementById('micBtn');
+        const chatInput = document.getElementById("aiInput");
+        let isVoiceMode = false;
+
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        let recognition;
+
+        if (SpeechRecognition) {
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = true; 
+
+            recognition.onstart = function() {
+                micBtn.classList.add('mic-listening');
+                chatInput.placeholder = "Listening... (watch your words appear here)";
+                chatInput.value = "";
+            };
+
+            recognition.onresult = function(event) {
+                let interimTranscript = '';
+                let finalTranscript = '';
+
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    if (event.results[i].isFinal) {
+                        finalTranscript += event.results[i][0].transcript;
+                    } else {
+                        interimTranscript += event.results[i][0].transcript;
+                    }
+                }
+
+                if (interimTranscript !== '') {
+                    chatInput.value = interimTranscript;
+                }
+                
+                if (finalTranscript !== '') {
+                    chatInput.value = finalTranscript;
+                    isVoiceMode = true; 
+                    sendMessage(); 
+                }
+            };
+
+            recognition.onerror = function(event) {
+                micBtn.classList.remove('mic-listening');
+                chatInput.placeholder = "Type a message or click the mic...";
+                console.error("Speech recognition error", event.error);
+            };
+
+            recognition.onend = function() {
+                micBtn.classList.remove('mic-listening');
+                chatInput.placeholder = "Type a message or click the mic...";
+            };
+        }
+
+        micBtn.addEventListener('click', () => {
+            if (recognition) {
+                window.speechSynthesis.cancel(); 
+                recognition.start();
+            } else {
+                alert("Voice recognition is not supported in your browser. Please try Google Chrome or Edge.");
+            }
+        });
+
+        // --- TEXT TO SPEECH LOGIC ---
+        function speakResponse(text) {
+            if ('speechSynthesis' in window) {
+                let cleanText = text.replace(/\*\*(.*?)\*\*/g, '$1'); 
+                cleanText = cleanText.replace(/\*/g, ''); 
+                cleanText = cleanText.replace(/#/g, '');
+
+                const utterance = new SpeechSynthesisUtterance(cleanText);
+                utterance.rate = 1.0;
+                utterance.pitch = 1.0;
+                
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        // --- FILE ATTACHMENT LOGIC ---
+        let attachedFile = null;
+        const cvUploadInput = document.getElementById('cvUpload');
+        const attachmentPreview = document.getElementById('attachmentPreview');
+        const attachmentName = document.getElementById('attachmentName');
+        const attachBtn = document.getElementById('attachBtn');
+
+        cvUploadInput.addEventListener('change', function(e) {
+            if (e.target.files.length > 0) {
+                attachedFile = e.target.files[0];
+                attachmentName.textContent = attachedFile.name;
+                attachmentPreview.style.display = 'flex';
+            }
+        });
+
+        function removeAttachment() {
+            attachedFile = null;
+            cvUploadInput.value = '';
+            attachmentPreview.style.display = 'none';
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            // --- AUTH LOGIC ---
+            const loginLink = document.getElementById("navLoginLink");
+            const signupLink = document.getElementById("navSignupLink");
+            const navJobs = document.getElementById("navJobs");
+            const userNavContainer = document.getElementById("userNavContainer");
+            const logoutLink = document.getElementById("logoutLink");
+            const welcomeText = document.getElementById("welcomeText");
+
+            let user = null;
+            try {
+                const raw = localStorage.getItem("edugen_user");
+                user = raw ? JSON.parse(raw) : null;
+            } catch { user = null; }
+
+            if (user && user.name) {
+                loginLink.style.display = "none";
+                signupLink.style.display = "none";
+                navJobs.style.display = "block";
+                userNavContainer.style.display = "flex";
+                welcomeText.textContent = "Hi, " + user.name;
+            } else {
+                loginLink.style.display = "block";
+                signupLink.style.display = "inline-flex";
+                navJobs.style.display = "none";
+                userNavContainer.style.display = "none";
+            }
+            
+            logoutLink?.addEventListener("click", (e) => {
+                e.preventDefault();
+                localStorage.removeItem("edugen_user");
+                window.location.href = "home.html";
+            });
+
+            // --- CHATBOT & TOOL LOGIC ---
+            const chatHistory = document.getElementById("chatHistory");
+            const sendBtn = document.getElementById("sendBtn");
+            const systemTitle = document.getElementById("systemTitle");
+            const chatContainer = document.getElementById("chatContainer");
+            
+            let currentMode = "chat"; 
+
+            const toolCards = document.querySelectorAll(".tool-card");
+            const toolButtons = document.querySelectorAll(".tool-btn");
+
+            function activateToolUI(index, modeName, titleText, titleColor, placeholderText, welcomeMessage) {
+                // Shut off any active voice features immediately
+                window.speechSynthesis.cancel(); 
+                if (recognition) recognition.stop();
+                isVoiceMode = false;
+
+                toolCards.forEach((card, i) => {
+                    card.classList.remove("active-tool");
+                    toolButtons[i].textContent = "Select Tool";
+                });
+
+                toolCards[index].classList.add("active-tool");
+                toolButtons[index].innerHTML = "● Active Mode";
+
+                currentMode = modeName;
+                systemTitle.textContent = titleText;
+                systemTitle.style.color = titleColor;
+                chatInput.placeholder = placeholderText;
+                
+                chatContainer.style.boxShadow = `0 0 20px ${titleColor}20`;
+
+                // Handle Attachment Visibility (Hidden for General Chat)
+                if (modeName === "chat") {
+                    if (attachBtn) attachBtn.style.display = "none";
+                    removeAttachment(); 
+                } else {
+                    if (attachBtn) attachBtn.style.display = "flex";
+                }
+
+                // Handle Mic Visibility (ONLY for Interview Mode)
+                if (modeName === "interview") {
+                    if (micBtn) micBtn.style.display = "flex";
+                } else {
+                    if (micBtn) micBtn.style.display = "none";
+                }
+
+                chatHistory.innerHTML = ""; 
+                addMessage(welcomeMessage, false);
+
+                chatContainer.scrollIntoView({ behavior: "smooth", block: "center" });
+                setTimeout(() => chatInput.focus(), 500); 
+            }
+
+            toolCards[0].addEventListener("click", () => activateToolUI(0, "chat", "AE-GEN Chat", "#a855f7", "Type a general career question...", "💬 **AE-GEN Chat Active!** \n\nHello! You can ask me general career questions or seek advice."));
+            toolCards[1].addEventListener("click", () => activateToolUI(1, "resume", "Resume Optimizer", "#fbbf24", "Upload your CV or paste text...", "📝 **Resume Optimizer Active!** \n\nPlease upload your CV (PDF/Doc) or paste your text below."));
+            toolCards[2].addEventListener("click", () => activateToolUI(2, "interview", "Mock Interviewer", "#f43f5e", "Enter job role and upload CV...", "🤖 **CrewAI Interview Panel Active!** \n\nEnter your target job role and attach your CV. I will generate a custom interview based on your exact experience! \n\n*(Tip: Click the Microphone to talk to your interviewers!)*"));
+            toolCards[3].addEventListener("click", () => activateToolUI(3, "skills", "Skill Gap Analyzer", "#34d399", "Upload your CV to begin...", "📊 **Skill Gap Analyzer Active!** \n\nUpload your CV and tell me your target role. I will compare your current skills against industry standards."));
+
+            function formatAIText(text) {
+                let formatted = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                formatted = formatted.replace(/\n/g, '<br>');
+                return formatted;
+            }
+
+            function addMessage(text, isUser, filename=null) {
+                const msgDiv = document.createElement("div");
+                msgDiv.className = isUser ? "msg msg-user" : "msg msg-ai";
+                
+                let htmlContent = "";
+                if (filename) {
+                    htmlContent += `<div style="background: rgba(0,0,0,0.2); padding: 5px 10px; border-radius: 6px; margin-bottom: 5px; font-size: 0.8rem;">📎 Attached: ${filename}</div>`;
+                }
+
+                if (!isUser) {
+                    htmlContent += formatAIText(text);
+                } else {
+                    htmlContent += text;
+                }
+                
+                msgDiv.innerHTML = htmlContent;
+                chatHistory.appendChild(msgDiv);
+                chatHistory.scrollTop = chatHistory.scrollHeight; 
+            }
+
+            window.sendMessage = async function() {
+                const message = chatInput.value.trim();
+                
+                if (!message && !attachedFile) return; 
+
+                // 1. Instantly lock the inputs so the user cannot double-click
+                chatInput.disabled = true;
+                if (sendBtn) {
+                    sendBtn.disabled = true;
+                    sendBtn.style.opacity = "0.5";
+                    sendBtn.style.cursor = "not-allowed";
+                }
+
+                addMessage(message, true, attachedFile ? attachedFile.name : null);
+                
+                const fileToSend = attachedFile;
+                chatInput.value = ""; 
+                removeAttachment(); 
+
+                const loadingId = "loading-" + Date.now();
+                const loadingDiv = document.createElement("div");
+                loadingDiv.className = "msg msg-ai";
+                loadingDiv.id = loadingId;
+                loadingDiv.textContent = fileToSend ? "Processing document..." : "Processing your request...";
+                loadingDiv.style.opacity = "0.7";
+                chatHistory.appendChild(loadingDiv);
+                chatHistory.scrollTop = chatHistory.scrollHeight;
+
+                let apiRoute = "https://edugen-backend.onrender.com/api/chat";
+                if (currentMode === "resume") apiRoute = "https://edugen-backend.onrender.com/api/resume";
+                if (currentMode === "skills") apiRoute = "https://edugen-backend.onrender.com/api/skills";
+                if (currentMode === "interview") apiRoute = "https://edugen-backend.onrender.com/api/mock_interview";
+
+                const formData = new FormData();
+                formData.append('message', message);
+                
+                if (fileToSend) formData.append('cv_file', fileToSend);
+
+                if (currentMode === "interview") {
+                    formData.append('role', message);
+                    let userSkills = "General knowledge"; 
+                    try {
+                        const profile = JSON.parse(localStorage.getItem("edugen_profile"));
+                        if (profile && profile.skills) userSkills = profile.skills;
+                    } catch (e) { }
+                    formData.append('skills', userSkills);
+                }
+
+                let currentUser = null;
+                try { currentUser = JSON.parse(localStorage.getItem("edugen_user")); } catch(e) {}
+                let finalUserId = currentUser ? (currentUser.id || currentUser.user_id || (currentUser.user ? currentUser.user.id : null)) : null;
+                if(finalUserId) formData.append('user_id', finalUserId);
+
+                try {
+                    const response = await fetch(apiRoute, {
+                        method: "POST",
+                        body: formData
+                    });
+
+                    const data = await response.json();
+                    const loadingEl = document.getElementById(loadingId);
+                    if (loadingEl) loadingEl.remove();
+
+                    if (data.response) {
+                        addMessage(data.response, false);
+                        
+                        if (isVoiceMode && currentMode === "interview") {
+                            speakResponse(data.response);
+                            isVoiceMode = false; 
+                        }
+                    } else {
+                        addMessage("Error: " + (data.error || "Something went wrong."), false);
+                    }
+                } catch (error) {
+                    const loadingEl = document.getElementById(loadingId);
+                    if (loadingEl) loadingEl.remove();
+                    addMessage("Connection error. Ensure your Flask server is running!", false);
+                } finally {
+                    // 2. UNLOCK the inputs after the AI completely finishes its response or fails
+                    chatInput.disabled = false;
+                    if (sendBtn) {
+                        sendBtn.disabled = false;
+                        sendBtn.style.opacity = "1";
+                        sendBtn.style.cursor = "pointer";
+                    }
+                    chatInput.focus(); // Automatically put the cursor back in the box for them
+                }
+            }
+
+            if(sendBtn) sendBtn.addEventListener("click", () => {
+                isVoiceMode = false; 
+                sendMessage();
+            });
+            if(chatInput) {
+                chatInput.addEventListener("keypress", (e) => {
+                    if (e.key === "Enter") {
+                        isVoiceMode = false; 
+                        sendMessage();
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

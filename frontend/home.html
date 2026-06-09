@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EduGEN – AI-Powered Career Guidance</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <style>
+        /* --- GLOBAL RESETS --- */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Poppins', sans-serif; background-color: #020617; overflow-x: hidden; color: #fff; line-height: 1.6; }
+
+        /* --- THE EXPANDING CANVAS EFFECT --- */
+        /* The dark background stays fixed behind everything */
+        .fixed-bg { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: #020617; z-index: -2; }
+        
+        /* The glowing orbs in the dark background */
+        .orb { position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.3; animation: floatOrb 12s infinite ease-in-out alternate; }
+        .orb-1 { width: 400px; height: 400px; background: #4f46e5; top: 10%; left: 15%; }
+        .orb-2 { width: 500px; height: 500px; background: #a855f7; bottom: 10%; right: 5%; animation-delay: -6s; }
+        @keyframes floatOrb { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(40px, 60px) scale(1.1); } }
+
+        /* --- HEADER --- */
+        .top-nav { display: flex; align-items: center; padding: 0 40px; height: 90px; position: fixed; top: 0; width: 100%; z-index: 100; transition: background 0.3s; }
+        .top-nav.scrolled { background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .logo-img { height: 45px; width: auto; border-radius: 50%; border: 2px solid rgba(79, 70, 229, 0.5); box-shadow: 0 0 15px rgba(79, 70, 229, 0.4); }
+        .nav-links { margin-left: 40px; display: flex; gap: 30px; }
+        .nav-links a { color: #94a3b8; text-decoration: none; font-size: 0.95rem; font-weight: 500; transition: color 0.3s; }
+        .nav-links a:hover, .nav-links a.active { color: white; }
+        .nav-auth { margin-left: auto; display: flex; align-items: center; gap: 20px; }
+        .nav-auth a { color: white; text-decoration: none; font-size: 0.95rem; font-weight: 500; }
+        .btn-signup { background: #4f46e5; color: white !important; padding: 8px 24px; border-radius: 30px; font-weight: 600; transition: background 0.3s, transform 0.3s; box-shadow: 0 4px 15px rgba(79, 70, 229, 0.4); }
+        .btn-signup:hover { background: #4338ca; transform: translateY(-2px); }
+
+        /* --- HERO SECTION (Dark Mode) --- */
+        .hero-section { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 0 20px; position: relative; z-index: 1; }
+        .hero-title { font-size: clamp(3rem, 5vw, 4.5rem); font-weight: 800; line-height: 1.1; margin-bottom: 20px; color: white; letter-spacing: -1px;}
+        .hero-title .text-gradient { background: linear-gradient(90deg, #38bdf8, #a855f7); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+        .hero-subtitle { font-size: 1.1rem; color: #94a3b8; max-width: 650px; margin: 0 auto 40px; line-height: 1.6; }
+        
+        .btn-primary { background: #4f46e5; color: white; padding: 15px 35px; border-radius: 30px; font-size: 1rem; font-weight: 600; text-decoration: none; transition: all 0.3s; box-shadow: 0 4px 15px rgba(79, 70, 229, 0.4); border: 1px solid #4f46e5; }
+        .btn-primary:hover { background: #4338ca; box-shadow: 0 8px 25px rgba(79, 70, 229, 0.6); transform: translateY(-3px); }
+        .btn-outline { background: rgba(255,255,255,0.05); color: white; padding: 15px 35px; border-radius: 30px; font-size: 1rem; font-weight: 600; text-decoration: none; transition: all 0.3s; border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(5px); }
+        .btn-outline:hover { background: rgba(255,255,255,0.1); border-color: #38bdf8; transform: translateY(-3px); }
+
+        .hero-tag { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); padding: 8px 20px; border-radius: 30px; font-size: 0.9rem; color: #cbd5e1; backdrop-filter: blur(8px); cursor: default; }
+
+        /* --- THE WHITE CANVAS --- */
+        /* This is the white sheet that slides up over the dark background */
+        .canvas-wrapper { background-color: #ffffff; color: #020617; border-radius: 40px 40px 0 0; padding: 100px 20px; position: relative; z-index: 2; margin-top: -50px; box-shadow: 0 -20px 50px rgba(0,0,0,0.5); }
+        .content-container { max-width: 1200px; margin: 0 auto; }
+        .section-header { text-align: center; margin-bottom: 60px; }
+        .section-header h2 { font-size: 3rem; font-weight: 700; letter-spacing: -1px; margin-bottom: 15px; color: #020617;}
+        .section-header p { font-size: 1.2rem; color: #475569; }
+
+        /* --- HOW IT WORKS (White Canvas 3-Step) --- */
+        .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
+        .step-card-light { background: #f8fafc; border-radius: 24px; padding: 40px 30px; text-align: center; transition: transform 0.3s, box-shadow 0.3s; border: 1px solid #e2e8f0; }
+        .step-card-light:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(0,0,0,0.05); border-color: #cbd5e1; }
+        .step-icon-wrap { width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 2.5rem; transition: transform 0.3s; }
+        .step-card-light:hover .step-icon-wrap { transform: scale(1.1) rotate(5deg); }
+        .step-card-light h3 { font-size: 1.6rem; color: #0f172a; margin-bottom: 15px; font-weight: 700; }
+        .step-card-light p { color: #475569; font-size: 1rem; line-height: 1.6; }
+
+        /* --- TRENDING ROLES (White Canvas) --- */
+        .ai-section { margin-top: 100px; text-align: center; }
+        .role-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; text-align: left; }
+        .role-card { background: white; border-radius: 20px; padding: 30px; border: 1px solid #e2e8f0; box-shadow: 0 10px 30px rgba(0,0,0,0.03); transition: transform 0.3s; cursor: pointer; display: flex; flex-direction: column; }
+        .role-card:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(0,0,0,0.08); border-color: #cbd5e1; }
+        .role-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+        .role-icon { font-size: 2.5rem; }
+        .role-card h4 { font-size: 1.4rem; color: #0f172a; margin-bottom: 10px; font-weight: 700; }
+        .role-card p { color: #64748b; font-size: 0.95rem; margin-bottom: 20px; flex-grow: 1; }
+        .role-tags { display: flex; gap: 10px; flex-wrap: wrap; }
+        .tag { background: #f1f5f9; color: #475569; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
+
+        /* --- MODAL --- */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(5px); z-index: 1000; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s ease; }
+        .modal-overlay.active { display: flex; opacity: 1; }
+        .modal-card { background: white; color: #1f2937; width: 90%; max-width: 500px; padding: 40px; border-radius: 18px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); transform: scale(0.9); transition: transform 0.3s ease; position: relative; }
+        .modal-overlay.active .modal-card { transform: scale(1); }
+        .close-btn { position: absolute; top: 20px; right: 20px; background: #f3f4f6; border: none; width: 30px; height: 30px; border-radius: 50%; font-size: 1.2rem; color: #6b7280; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
+        /* --- FOOTER --- */
+        footer { text-align: center; padding: 40px; color: #64748b; background: white; border-top: 1px solid #e2e8f0; }
+    </style>
+</head>
+
+<body>
+
+    <div class="fixed-bg">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+    </div>
+
+    <div class="modal-overlay" id="careerModal">
+        <div class="modal-card">
+            <button class="close-btn" onclick="closeModal()">×</button>
+            <h2 id="modalTitle" style="margin-top:0; font-size: 1.8rem; font-weight: 700; color: #0f172a;">Title</h2>
+            <p id="modalDesc" style="color: #4b5563; line-height: 1.6; margin-top: 15px; margin-bottom: 25px;">Description.</p>
+            <a href="job-engine.html" style="display: inline-block; background: #4f46e5; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600;">Explore Roles &rarr;</a>
+        </div>
+    </div>
+
+    <header class="top-nav" id="mainNav">
+        <div class="logo">
+            <img src="assets/picture/logoEdugen.png" alt="EduGEN Logo" class="logo-img" />
+        </div>
+        <nav class="nav-links">
+            <a href="home.html" class="active">Home</a>
+            <a href="assessment.html" id="navAssessment" style="display:none;">Assessment</a>
+            <a href="dashboard.html" id="navDashboard" style="display:none;">Dashboard</a>
+            <a href="lab.html" id="navAiLab" style="display:none;">AI Lab</a>
+        </nav>
+        <div class="nav-auth">
+            <a href="about_us.html">About Us</a>
+            <a href="login.html" id="navLoginLink">Login</a>
+            <a href="signup.html" id="navSignupLink" class="btn-signup">Sign Up</a>
+            
+            <a href="job-engine.html" id="navJobs" style="display:none;">Jobs</a>
+            <div id="userNavContainer" style="display:none; align-items: center; gap: 20px;">
+                <a href="profile.html" id="profileLink">Profile</a>
+                <a href="#" id="logoutLink" style="color: #f43f5e;">Logout</a>
+                <span id="welcomeText" style="color: #38bdf8; font-weight: 600;"></span>
+            </div>
+        </div>
+    </header>
+
+    <section class="hero-section">
+        <h1 class="hero-title">
+            Discover Your Future with <br><span class="text-gradient">EduGEN </span>
+        </h1>
+        <p class="hero-subtitle">
+            Stop guessing. Start building. We use advanced artificial intelligence to analyze your unique traits, predict your ideal career paths, and prepare you for the jobs of tomorrow.
+        </p>
+        <div style="display: flex; gap: 20px; margin-bottom: 40px;">
+            <a href="assessment.html" id="heroBtnAssessment" class="btn-primary">Start Assessment</a>
+            <a href="lab.html" id="heroBtnAiLab" class="btn-outline"> AI Lab</a>
+        </div>
+        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+            <span class="hero-tag">✨ Competency Mapping</span>
+            <span class="hero-tag">🚀 AI Analytics</span>
+            <span class="hero-tag">🎯 Live Job Insights</span>
+        </div>
+    </section>
+
+    <div class="canvas-wrapper">
+        <div class="content-container">
+            
+            <div class="section-header">
+                <h2>How EduGEN Works</h2>
+                <p>Three intelligent steps to unlock your potential.</p>
+            </div>
+
+            <div class="grid-3">
+                <div class="step-card-light">
+                    <div class="step-icon-wrap" style="background: rgba(79,70,229,0.1); color: #4f46e5;">🧠</div>
+                    <h3>1. Assess</h3>
+                    <p>Take our dynamic, scenario-based assessment. Our AI reads your instincts to build a comprehensive behavioral profile.</p>
+                </div>
+
+                <div class="step-card-light">
+                    <div class="step-icon-wrap" style="background: rgba(168,85,247,0.1); color: #a855f7;">🎯</div>
+                    <h3>2. Match</h3>
+                    <p>Our backend scans the live job market and mathematically maps your unique traits to the highest-converting career clusters.</p>
+                </div>
+
+                <div class="step-card-light">
+                    <div class="step-icon-wrap" style="background: rgba(56,189,248,0.1); color: #38bdf8;">🚀</div>
+                    <h3>3. Level Up</h3>
+                    <p>Enter the AI Lab. Simulate high-pressure interviews, optimize your resume, and let our agents help you close your skill gaps.</p>
+                </div>
+            </div>
+
+            <div class="ai-section">
+                <h2 style="font-size: 2.5rem; color: #020617; font-weight: 700; margin-bottom: 10px;">Trending AI Matches</h2>
+                <p style="color: #475569; font-size: 1.1rem; margin-bottom: 50px;">The most popular career roadmaps generated this week.</p>
+                
+                <div class="role-grid">
+                    <div class="role-card" onclick="openModal('Data Scientist', 'Data Scientists combine strong analytical skills with programming knowledge to extract actionable insights from massive datasets. They build machine learning models to predict future trends.')">
+                        <div class="role-header">
+                            <span class="role-icon">📊</span>
+                            <span style="background: rgba(34, 197, 94, 0.1); color: #16a34a; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; border: 1px solid rgba(34,197,94,0.2);">High Demand</span>
+                        </div>
+                        <h4>Data Scientist</h4>
+                        <p>Analyze complex data to help companies make smarter decisions.</p>
+                        <div class="role-tags">
+                            <span class="tag">Python</span>
+                            <span class="tag">SQL</span>
+                            <span class="tag">Machine Learning</span>
+                        </div>
+                    </div>
+
+                    <div class="role-card" onclick="openModal('UX/UI Designer', 'UX/UI Designers are responsible for the look and feel of digital products. They conduct user research, create wireframes, and design interfaces that are intuitive and visually appealing.')">
+                        <div class="role-header">
+                            <span class="role-icon">🎨</span>
+                            <span style="background: rgba(168, 85, 247, 0.1); color: #9333ea; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; border: 1px solid rgba(168,85,247,0.2);">Creative</span>
+                        </div>
+                        <h4>UX/UI Designer</h4>
+                        <p>Design intuitive and beautiful digital experiences for users.</p>
+                        <div class="role-tags">
+                            <span class="tag">Figma</span>
+                            <span class="tag">Prototyping</span>
+                            <span class="tag">User Research</span>
+                        </div>
+                    </div>
+
+                    <div class="role-card" onclick="openModal('Cybersecurity Analyst', 'Cybersecurity Analysts play a vital role in protecting organizational assets. They monitor networks for security breaches, investigate violations, and implement security measures.')">
+                        <div class="role-header">
+                            <span class="role-icon">🔐</span>
+                            <span style="background: rgba(56, 189, 248, 0.1); color: #0284c7; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; border: 1px solid rgba(56,189,248,0.2);">Tech Core</span>
+                        </div>
+                        <h4>Cybersecurity Analyst</h4>
+                        <p>Protect organizations from cyber threats and security breaches.</p>
+                        <div class="role-tags">
+                            <span class="tag">Network Security</span>
+                            <span class="tag">Encryption</span>
+                            <span class="tag">Risk</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 50px;">
+                    <a href="signup.html" id="viewPathsLink" style="color: #4f46e5; text-decoration: none; font-size: 1.1rem; font-weight: 600;">View all career paths &rarr;</a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <footer>
+        <p>© 2026 EduGEN AI Platform. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // Navbar scroll effect
+        window.addEventListener('scroll', () => {
+            const nav = document.getElementById('mainNav');
+            if (window.scrollY > 50) {
+                nav.classList.add('scrolled');
+            } else {
+                nav.classList.remove('scrolled');
+            }
+        });
+
+        // Modal Logic
+        function openModal(title, desc) {
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalDesc').textContent = desc;
+            document.getElementById('careerModal').classList.add('active');
+        }
+        function closeModal() { document.getElementById('careerModal').classList.remove('active'); }
+        document.getElementById('careerModal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('careerModal')) closeModal();
+        });
+
+        // Auth Header & Button Logic
+        document.addEventListener("DOMContentLoaded", () => {
+            const loginLink = document.getElementById("navLoginLink");
+            const signupLink = document.getElementById("navSignupLink");
+            const navJobs = document.getElementById("navJobs");
+            const userNavContainer = document.getElementById("userNavContainer");
+            const logoutLink = document.getElementById("logoutLink");
+            const welcomeText = document.getElementById("welcomeText");
+            const viewPathsLink = document.getElementById("viewPathsLink");
+
+            // Navigation Links to Toggle
+            const navAssessment = document.getElementById("navAssessment");
+            const navDashboard = document.getElementById("navDashboard");
+            const navAiLab = document.getElementById("navAiLab");
+
+            // Hero Buttons
+            const heroBtnAssessment = document.getElementById("heroBtnAssessment");
+            const heroBtnAiLab = document.getElementById("heroBtnAiLab");
+
+            let user = null;
+            try { user = JSON.parse(localStorage.getItem("edugen_user")); } catch {}
+
+            if (user && user.name) {
+                // Hide Login/Signup, show User info and Jobs
+                loginLink.style.display = "none";
+                signupLink.style.display = "none";
+                navJobs.style.display = "inline-block";
+                userNavContainer.style.display = "flex";
+                welcomeText.textContent = "Hi, " + user.name;
+
+                // Make Protected Links Visible
+                if (navAssessment) navAssessment.style.display = "inline-block";
+                if (navDashboard) navDashboard.style.display = "inline-block";
+                if (navAiLab) navAiLab.style.display = "inline-block";
+
+                // Admin Logic
+                if (user.role === 'admin' || user.name === 'System Admin') {
+                    if (!document.getElementById("navAdminLink")) {
+                        const adminLink = document.createElement("a");
+                        adminLink.href = "admin_dashboard.html";
+                        adminLink.id = "navAdminLink";
+                        adminLink.textContent = "Admin Panel";
+                        adminLink.style.color = "#a855f7";
+                        adminLink.style.fontWeight = "600";
+                        userNavContainer.insertBefore(adminLink, document.getElementById("profileLink"));
+                    }
+                }
+                if (viewPathsLink) viewPathsLink.href = "job-engine.html";
+            } else {
+                // Ensure Protected Links stay hidden if not logged in
+                if (navAssessment) navAssessment.style.display = "none";
+                if (navDashboard) navDashboard.style.display = "none";
+                if (navAiLab) navAiLab.style.display = "none";
+                
+                if (viewPathsLink) viewPathsLink.href = "signup.html";
+
+                // Intercept clicks on Hero Buttons for unauthenticated users
+                const requireLoginPrompt = (e) => {
+                    e.preventDefault(); // Stop the link from redirecting
+                    alert("Please log in or sign up first to access this feature.");
+                    window.location.href = "login.html"; // Redirect to login page
+                };
+
+                if (heroBtnAssessment) heroBtnAssessment.addEventListener("click", requireLoginPrompt);
+                if (heroBtnAiLab) heroBtnAiLab.addEventListener("click", requireLoginPrompt);
+            }
+
+            logoutLink?.addEventListener("click", (e) => {
+                e.preventDefault();
+                localStorage.removeItem("edugen_user");
+                window.location.href = "home.html";
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Suitability Assessment - EduGEN</title>
+    <link rel="stylesheet" href="assets/css/styles.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+        /* --- LAYOUT FIXES --- */
+        body { display: flex; flex-direction: column; min-height: 100vh; background-color: #020617; color: white; font-family: 'Poppins', sans-serif;}
+        main { flex: 1; width: 100%; max-width: 800px; margin: 0 auto; padding: 20px; }
+
+        /* --- LOGO STYLES --- */
+        .top-nav { display: flex; align-items: center; padding: 0 40px; height: 90px; background: rgba(15, 23, 42, 0.9); border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .logo-img { height: 55px; width: auto; border-radius: 50%; object-fit: cover; border: 2px solid rgba(79, 70, 229, 0.3); box-shadow: 0 0 15px rgba(79, 70, 229, 0.3); transition: transform 0.3s ease; }
+        .logo-img:hover { transform: scale(1.05); }
+
+        .nav-links a, .nav-auth a { text-decoration: none; color: #94a3b8; font-weight: 500; font-size: 0.95rem; margin-right: 20px; transition: color 0.3s; }
+        .nav-links a:hover, .nav-auth a:hover { color: white; }
+        .nav-links a.active { color: white; font-weight: 600; border-bottom: 2px solid #38bdf8; padding-bottom: 5px; }
+
+        /* --- WIZARD / PAGINATION STYLES --- */
+        .progress-container { width: 100%; background: rgba(255, 255, 255, 0.05); border-radius: 10px; height: 8px; margin-bottom: 30px; overflow: hidden; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #38bdf8, #a855f7); width: 0%; transition: width 0.4s ease; }
+        
+        .step-card { display: none; animation: slideIn 0.4s ease; background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(255, 255, 255, 0.08); padding: 30px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        .step-card.active { display: block; }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+
+        .nav-buttons { display: flex; justify-content: space-between; margin-top: 30px; }
+        .btn-outline { background: transparent; border: 1px solid #64748b; color: #cbd5e1; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-family: 'Poppins', sans-serif; transition: all 0.2s; }
+        .btn-outline:hover { background: rgba(255,255,255,0.1); color: white; border-color: #94a3b8; }
+        .btn-next { background: #4f46e5; color: white; border: none; padding: 12px 30px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: background 0.3s; font-family: 'Poppins', sans-serif; }
+        .btn-next:hover { background: #4338ca; }
+        .btn-next:disabled { background: #334155; color: #64748b; cursor: not-allowed; }
+
+        /* Custom Radio Buttons */
+        .radio-label { display: block; margin-bottom: 12px; padding: 15px 20px; background: rgba(15, 23, 42, 0.5); border-radius: 12px; cursor: pointer; border: 1px solid rgba(255,255,255,0.05); transition: all 0.2s; }
+        .radio-label:hover { background: rgba(255,255,255,0.1); border-color: rgba(56, 189, 248, 0.3); }
+        .radio-label input:checked + span { color: #38bdf8; font-weight: 600; }
+        .radio-label:has(input:checked) { border-color: #38bdf8; background: rgba(56, 189, 248, 0.1); }
+        .radio-label input { margin-right: 15px; accent-color: #38bdf8; transform: scale(1.2); }
+
+        /* --- RESULTS CARD --- */
+        .suitability-card { background: rgba(30, 41, 59, 0.8); border: 2px solid #38bdf8; padding: 40px; border-radius: 16px; text-align: center; }
+        .score-circle { width: 140px; height: 140px; border-radius: 50%; background: conic-gradient(#38bdf8 0%, rgba(255,255,255,0.1) 0%); display: flex; align-items: center; justify-content: center; margin: 0 auto 20px auto; box-shadow: 0 0 20px rgba(56, 189, 248, 0.2); }
+        .score-inner { width: 120px; height: 120px; background: #0f172a; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: 700; color: white; }
+        .roadmap-list { text-align: left; margin-top: 30px; padding: 25px; background: rgba(0,0,0,0.3); border-radius: 12px; }
+        .roadmap-list h4 { margin-bottom: 15px; font-size: 1.1rem; }
+        .roadmap-list ul { list-style: none; padding: 0; }
+        .roadmap-list li { margin-bottom: 12px; padding-left: 30px; position: relative; font-size: 0.95rem; line-height: 1.5; color: #cbd5e1; }
+        .roadmap-list li::before { content: "🚀"; position: absolute; left: 0; top: 0; }
+        
+        /* Explanation Box */
+        .score-explanation { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 12px; margin: 15px auto; max-width: 400px; font-size: 0.9rem; color: #94a3b8; }
+        .score-explanation strong { color: white; }
+    </style>
+</head>
+<body>
+
+    <header class="top-nav">
+        <div class="logo">
+            <img src="assets/picture/logoEdugen.png" alt="EduGEN Logo" class="logo-img" />
+        </div>
+        <div style="display: flex; justify-content: space-between; flex: 1; align-items: center; width: 100%;">
+            <nav class="nav-links" style="margin-left: 40px;">
+                <a href="home.html">Home</a>
+                <a href="assessment.html" class="active">Assessment</a> 
+                <a href="dashboard.html">Dashboard</a>
+                <a href="lab.html">AI Lab</a>
+                <a href="feedback.html">Feedback</a>
+            </nav>
+            <div class="nav-auth" style="display: flex; align-items: center;">
+                <a href="login.html" id="navLoginLink">Login</a>
+                <a href="signup.html" id="navSignupLink" class="btn-outline" style="padding: 6px 20px;">Sign Up</a>
+                <a href="job-engine.html" id="navJobs" style="display:none;">Jobs</a>
+                <div id="userNavContainer" style="display:none; align-items: center;">
+                    <a href="profile.html" id="profileLink">Profile</a>
+                    <a href="#" id="logoutLink" style="color:#f43f5e;">Logout</a>
+                    <span id="welcomeText" style="margin-left: 15px; color: #38bdf8; font-weight: 600;"></span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section style="padding-top: 40px;">
+            <div style="text-align: center; margin-bottom: 30px;">
+                <h1 style="font-size: 2rem; margin-bottom: 10px;">Targeted Career Suitability</h1>
+                <p style="color: #94a3b8;">Let our AI analyze your natural instincts.</p>
+            </div>
+
+            <div class="progress-container" id="progressContainer">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+
+            <form id="assessmentForm">
+                
+                <div class="step-card active" id="step_0">
+                    <h3 style="color: #38bdf8; margin-bottom: 20px; font-size: 1.3rem;">🎯 What is your target career?</h3>
+                    <p style="color: #94a3b8; margin-bottom: 20px; font-size: 0.9rem;">Select the role you want to pursue, and we will tailor the evaluation to see if you have the underlying traits for it.</p>
+                    <select id="targetCareer" style="padding: 15px; width: 100%; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: #0f172a; color: white; font-size: 1rem; cursor: pointer; outline: none; font-family: 'Poppins', sans-serif;">
+                        <option value="software_engineer">Software Engineer</option>
+                        <option value="data_scientist">Data Scientist</option>
+                        <option value="ui_designer">UI/UX Designer</option>
+                        <option value="cyber_analyst">Cybersecurity Analyst</option>
+                        <option value="product_manager">Product Manager</option>
+                        <option value="digital_marketer">Digital Marketer</option>
+                    </select>
+                </div>
+
+                <div class="step-card" id="step_1">
+                    <h3 style="color: #38bdf8; margin-bottom: 20px; font-size: 1.3rem;">📋 How This Assessment Works</h3>
+                    <p style="color: #cbd5e1; margin-bottom: 15px; font-size: 0.95rem; line-height: 1.6;">
+                        <strong>1. Scenario-Based Analysis:</strong> Instead of generic multiple-choice questions, you'll be presented with unique, real-world situations generated dynamically by our AI database.
+                    </p>
+                    <p style="color: #cbd5e1; margin-bottom: 15px; font-size: 0.95rem; line-height: 1.6;">
+                        <strong>2. Instinct Verification:</strong> Choose the action that feels most natural to you. Our system evaluates your responses against the core psychological traits (Logic, Design, Business) required for your chosen career.
+                    </p>
+                    <p style="color: #cbd5e1; margin-bottom: 25px; font-size: 0.95rem; line-height: 1.6;">
+                        <strong>3. Transparent Scoring:</strong> At the end, we map your natural inclinations to industry benchmarks to calculate your exact compatibility score and generate a custom roadmap.
+                    </p>
+                    <div style="padding: 15px; background: rgba(56, 189, 248, 0.1); border-left: 4px solid #38bdf8; border-radius: 6px;">
+                        <span style="font-size: 0.9rem; color: #7dd3fc; font-weight: 500;">Tip: Don't overthink it! Answer honestly to get the most accurate action plan.</span>
+                    </div>
+                </div>
+
+                <div id="dynamicQuestionsContainer">
+                    <div id="loaderText" style="text-align:center; padding:40px; color:#94a3b8;">Syncing with EduGEN AI Assessment Bank...</div>
+                </div>
+
+                <div class="nav-buttons" id="navButtons" style="display: none;">
+                    <button type="button" class="btn-outline" id="prevBtn">Back</button>
+                    <button type="button" class="btn-next" id="nextBtn">Continue</button>
+                </div>
+            </form>
+        </section>
+
+        <section id="recommendations" style="display: none; padding-top: 20px; padding-bottom: 60px;">
+            <div id="resultContainer"></div>
+        </section>
+    </main>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            // --- AUTH LOGIC ---
+            const loginLink = document.getElementById("navLoginLink");
+            const signupLink = document.getElementById("navSignupLink");
+            const navJobs = document.getElementById("navJobs");
+            const userNavContainer = document.getElementById("userNavContainer");
+            const logoutLink = document.getElementById("logoutLink");
+            const welcomeText = document.getElementById("welcomeText");
+
+            let user = null;
+            try { user = JSON.parse(localStorage.getItem("edugen_user")); } catch {}
+
+            if (user && user.name) {
+                loginLink.style.display = "none";
+                signupLink.style.display = "none";
+                navJobs.style.display = "inline-block";
+                userNavContainer.style.display = "flex";
+                welcomeText.textContent = "Hi, " + user.name;
+
+                if (user.role === 'admin' || user.name === 'System Admin') {
+                    if (!document.getElementById("navAdminLink")) {
+                        const adminLink = document.createElement("a");
+                        adminLink.href = "admin_dashboard.html";
+                        adminLink.id = "navAdminLink";
+                        adminLink.textContent = "Admin Panel";
+                        adminLink.style.color = "#a855f7"; 
+                        adminLink.style.fontWeight = "600";
+                        adminLink.style.marginRight = "20px";
+                        userNavContainer.insertBefore(adminLink, document.getElementById("profileLink"));
+                    }
+                }
+            }
+            
+            logoutLink?.addEventListener("click", (e) => {
+                e.preventDefault();
+                localStorage.removeItem("edugen_user");
+                window.location.href = "home.html";
+            });
+
+            // --- WIZARD / PAGINATION LOGIC ---
+            const form = document.getElementById("assessmentForm");
+            const dynamicQuestionsContainer = document.getElementById("dynamicQuestionsContainer");
+            const navButtons = document.getElementById("navButtons");
+            const prevBtn = document.getElementById("prevBtn");
+            const nextBtn = document.getElementById("nextBtn");
+            const progressFill = document.getElementById("progressFill");
+            
+            const resultsSection = document.getElementById("recommendations");
+            const resultContainer = document.getElementById("resultContainer");
+            const progressContainer = document.getElementById("progressContainer");
+
+            let activeQuestions = []; 
+            let currentStep = 0;
+            let totalSteps = 2; // Step 0 (Career Select) + Step 1 (Instructions)
+
+            async function loadAssessmentBank() {
+                try {
+                    const response = await fetch("https://edugen-backend.onrender.com/api/admin/questions");
+                    const data = await response.json();
+                    
+                    if (data.success && data.questions.length > 0) {
+                        activeQuestions = data.questions;
+                        totalSteps += activeQuestions.length; // Add number of questions
+                        renderScenarioContainers();
+                        updateWizardUI();
+                    } else {
+                        document.getElementById("loaderText").innerHTML = `<span style="color:#ef4444;">Admin hasn't added any scenarios yet!</span>`;
+                    }
+                } catch (error) {
+                    document.getElementById("loaderText").innerHTML = `<span style="color:#ef4444;">Error connecting to server. Is Flask running?</span>`;
+                }
+            }
+
+            function renderScenarioContainers() {
+                document.getElementById("loaderText").style.display = "none";
+                navButtons.style.display = "flex";
+                
+                activeQuestions.forEach((q, index) => {
+                    const stepNumber = index + 2; // Starts at 2 because 0 is select, 1 is instruction
+                    
+                    const questionCard = document.createElement("div");
+                    questionCard.className = "step-card";
+                    questionCard.id = `step_${stepNumber}`;
+                    
+                    // Show AI Loading State
+                    questionCard.innerHTML = `
+                        <h3 style="margin-bottom:20px; font-size:1.2rem;">Question ${stepNumber - 1}: "${q.question_text}"</h3>
+                        <div style="padding: 30px; text-align: center; color: #38bdf8; background: rgba(15,23,42,0.5); border-radius:12px;">
+                            <span style="display:inline-block; width:12px; height:12px; background:#38bdf8; border-radius:50%; margin-right:10px; animation: pulse 1s infinite;"></span>
+                            EduGEN AI is analyzing the scenario and generating custom options...
+                        </div>
+                    `;
+                    dynamicQuestionsContainer.appendChild(questionCard);
+
+                    // Fetch AI Options
+                    fetchAIOptions(q.id, q.question_text, stepNumber);
+                });
+            }
+
+            async function fetchAIOptions(questionId, scenarioText, stepNumber) {
+                try {
+                    const response = await fetch("https://edugen-backend.onrender.com/api/generate_options", {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ scenario: scenarioText })
+                    });
+                    const data = await response.json();
+
+                    if (data.success) {
+                        const card = document.getElementById(`step_${stepNumber}`);
+                        let optionsHTML = `<h3 style="margin-bottom:20px; font-size:1.2rem; line-height:1.5;">Question ${stepNumber - 1}: "${scenarioText}"</h3>`;
+                        
+                        data.options.forEach((opt) => {
+                            optionsHTML += `
+                                <label class="radio-label">
+                                    <input type="radio" name="q_${questionId}" value="${opt.trait}" required onchange="enableNextButton()" />
+                                    <span>${opt.text}</span>
+                                </label>
+                            `;
+                        });
+                        card.innerHTML = optionsHTML;
+                        if(currentStep === stepNumber) enableNextButton(); 
+                    }
+                } catch (error) {
+                    document.getElementById(`step_${stepNumber}`).innerHTML += `<div style="color:#ef4444; margin-top:20px;">AI Generation Failed. Please refresh.</div>`;
+                }
+            }
+
+            // WIZARD CONTROLS
+            function updateWizardUI() {
+                document.querySelectorAll('.step-card').forEach(card => card.classList.remove('active'));
+                document.getElementById(`step_${currentStep}`).classList.add('active');
+
+                const progressPercentage = (currentStep / (totalSteps - 1)) * 100;
+                progressFill.style.width = `${progressPercentage}%`;
+
+                prevBtn.style.visibility = currentStep === 0 ? "hidden" : "visible";
+
+                if (currentStep === totalSteps - 1) {
+                    nextBtn.textContent = "Calculate Results";
+                    nextBtn.style.background = "#10b981"; 
+                } else if (currentStep === 0) {
+                    nextBtn.textContent = "Start Assessment";
+                    nextBtn.style.background = "#4f46e5";
+                } else if (currentStep === 1) {
+                    nextBtn.textContent = "I'm Ready";
+                    nextBtn.style.background = "#38bdf8";
+                } else {
+                    nextBtn.textContent = "Continue";
+                    nextBtn.style.background = "#4f46e5"; 
+                }
+
+                enableNextButton();
+            }
+
+            window.enableNextButton = function() {
+                if (currentStep === 0 || currentStep === 1) {
+                    nextBtn.disabled = false; 
+                    return;
+                }
+
+                const activeCard = document.getElementById(`step_${currentStep}`);
+                const isChecked = activeCard.querySelector('input[type="radio"]:checked') !== null;
+                nextBtn.disabled = !isChecked;
+            }
+
+            nextBtn.addEventListener('click', () => {
+                if (currentStep < totalSteps - 1) {
+                    currentStep++;
+                    updateWizardUI();
+                } else {
+                    form.dispatchEvent(new Event('submit')); 
+                }
+            });
+
+            prevBtn.addEventListener('click', () => {
+                if (currentStep > 0) {
+                    currentStep--;
+                    updateWizardUI();
+                }
+            });
+
+            loadAssessmentBank();
+
+            // --- DYNAMIC SCORING & ROADMAP CALCULATION ---
+            const careerDatabase = {
+                software_engineer: { 
+                    title: "Software Engineer", trait: "logic", verdictHigh: "You have the mind of a builder! Your logical approach is perfect for writing clean code.", 
+                    roadmapPool: [
+                        "Master a core backend language like Python or Java.", "Learn Database Management and SQL optimization.",
+                        "Practice Data Structures and Algorithms.", "Build a full-stack project and deploy it to the cloud.",
+                        "Contribute to an open-source repository on GitHub.", "Familiarize yourself with Git and version control."
+                    ] 
+                },
+                data_scientist: { 
+                    title: "Data Scientist", trait: "logic", verdictHigh: "You are a natural data whisperer! Your love for logic will make training AI models a breeze.", 
+                    roadmapPool: [
+                        "Strengthen your Statistics & Probability.", "Learn Python, Pandas, and Scikit-Learn.",
+                        "Build data visualization dashboards using Tableau.", "Participate in Kaggle competitions.",
+                        "Study Machine Learning algorithms.", "Learn advanced SQL for data extraction."
+                    ] 
+                },
+                ui_designer: { 
+                    title: "UI/UX Designer", trait: "design", verdictHigh: "You have a creative soul! Your empathy for the user makes you a perfect fit for UI/UX.", 
+                    roadmapPool: [
+                        "Master UI tools like Figma or Adobe XD.", "Study User Psychology and Human-Computer Interaction.",
+                        "Build a prototype portfolio with 3 distinct apps.", "Learn basic HTML/CSS to understand developer handoff.",
+                        "Conduct mock user interviews for research.", "Analyze and redesign a popular app interface."
+                    ] 
+                },
+                cyber_analyst: { 
+                    title: "Cybersecurity Analyst", trait: "logic", verdictHigh: "You have the analytical mindset of a digital detective.", 
+                    roadmapPool: [
+                        "Learn networking fundamentals and TCP/IP.", "Familiarize yourself with Linux command line.",
+                        "Study for the CompTIA Security+ certification.", "Set up a virtual home lab to practice pentesting.",
+                        "Learn to use tools like Wireshark and Nmap.", "Stay updated with current OWASP vulnerabilities."
+                    ] 
+                },
+                product_manager: { 
+                    title: "Product Manager", trait: "business", verdictHigh: "You are a natural leader! You focus on the big picture and team communication.", 
+                    roadmapPool: [
+                        "Learn Agile and Scrum methodologies.", "Practice writing product requirement documents (PRDs).",
+                        "Develop stakeholder management skills.", "Study basic UX design principles.",
+                        "Learn data analytics to track product metrics.", "Conduct a competitive market analysis."
+                    ] 
+                },
+                digital_marketer: { 
+                    title: "Digital Marketer", trait: "business", verdictHigh: "You understand audiences! Your focus on strategy is exactly what it takes.", 
+                    roadmapPool: [
+                        "Learn SEO and SEM fundamentals.", "Understand social media algorithms and content strategy.",
+                        "Practice conversion copywriting.", "Get certified in Google Analytics.",
+                        "Run a mock ad campaign on Meta/Facebook.", "Learn basic email marketing automation."
+                    ] 
+                }
+            };
+
+        form.addEventListener("submit", (e) => {
+                e.preventDefault(); 
+
+                const targetId = document.getElementById("targetCareer").value;
+                const career = careerDatabase[targetId];
+                
+                // NEW: Track scores for ALL traits, not just the target one
+                let traitCounts = { logic: 0, design: 0, business: 0, social: 0 };
+                let matchingScore = 0;
+                let totalAnswered = 0;
+
+                activeQuestions.forEach(q => {
+                    const selectedOption = document.querySelector(`input[name="q_${q.id}"]:checked`);
+                    if (selectedOption) {
+                        totalAnswered++;
+                        let val = selectedOption.value;
+                        
+                        // Add +1 to whatever trait they chose
+                        if (traitCounts[val] !== undefined) traitCounts[val]++;
+                        
+                        // Check if it matches the target career goal
+                        if (val === career.trait) {
+                            matchingScore++; 
+                        }
+                    }
+                });
+
+                // Calculate exact percentages for the Dashboard bars
+                let logicScore = totalAnswered > 0 ? Math.round((traitCounts.logic / totalAnswered) * 100) : 0;
+                let designScore = totalAnswered > 0 ? Math.round((traitCounts.design / totalAnswered) * 100) : 0;
+                let businessScore = totalAnswered > 0 ? Math.round((traitCounts.business / totalAnswered) * 100) : 0;
+
+                // REALISTIC WEIGHTED SCORING FOR SUITABILITY
+                let percentage = 0;
+                if (totalAnswered > 0) {
+                    let baseScore = 30;
+                    let earnedScore = (matchingScore / totalAnswered) * 70;
+                    percentage = Math.round(baseScore + earnedScore);
+                }
+
+                // DYNAMIC UI LOGIC
+                let fitHeading = "";
+                let actionTitle = "";
+                let colorCode = "";
+
+                if (percentage >= 75) {
+                    fitHeading = "Great Fit!";
+                    actionTitle = "Focus Areas to Master:";
+                    colorCode = "#10b981";
+                } else if (percentage >= 55) {
+                    fitHeading = "Potential Fit";
+                    actionTitle = "Key Areas to Improve:";
+                    colorCode = "#fbbf24";
+                } else {
+                    fitHeading = "Consider a Pivot";
+                    actionTitle = "Critical Skills Needed to Bridge the Gap:";
+                    colorCode = "#f43f5e";
+                }
+
+                const verdictText = (percentage >= 55) ? career.verdictHigh : "Your instincts point toward a different industry. Consider exploring other roles!";
+
+                const shuffledRoadmap = career.roadmapPool.sort(() => 0.5 - Math.random());
+                const selectedRoadmap = shuffledRoadmap.slice(0, 3);
+
+                // FIX: Save data explicitly tied to this specific user's ID
+                let currentUser = JSON.parse(localStorage.getItem("edugen_user")) || { id: "guest" };
+                
+                let assessmentData = {
+                    chosenCareer: career.title,
+                    matchScore: percentage,
+                    trait: career.trait,
+                    logic: logicScore,
+                    design: designScore,
+                    business: businessScore
+                };
+                localStorage.setItem("edugen_assessment_result_" + currentUser.id, JSON.stringify(assessmentData));
+
+                let savedTasks = JSON.parse(localStorage.getItem('edugen_missions')) || {};
+                savedTasks["0"] = true; 
+                localStorage.setItem('edugen_missions', JSON.stringify(savedTasks));
+
+                // Hide Wizard, Show Results
+                form.style.display = "none";
+                progressContainer.style.display = "none";
+                document.querySelector("h1").textContent = "Your Exact Results";
+
+                resultContainer.innerHTML = `
+                    <div class="suitability-card">
+                        <h2>Your Suitability for ${career.title}</h2>
+                        <div class="score-circle" id="scoreCircle"><div class="score-inner">${percentage}%</div></div>
+                        <h3 style="color: ${colorCode}; font-size: 1.5rem;">${fitHeading}</h3>
+                        
+                        <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 15px; margin: 20px auto; max-width: 450px; font-size: 0.95rem; color: #cbd5e1; text-align: center;">
+                            You answered <strong>${totalAnswered}</strong> scenarios, and <strong>${matchingScore}</strong> of your choices directly matched the core trait required for this role.
+                        </div>
+                        
+                        <p style="margin-top: 15px; font-size: 1.1rem; color: #cbd5e1;">${verdictText}</p>
+                        <div class="roadmap-list">
+                            <h4 style="color: ${colorCode}; margin-bottom: 15px; font-size: 1.1rem;">${actionTitle}</h4>
+                            <ul>${selectedRoadmap.map(step => `<li>${step}</li>`).join('')}</ul>
+                        </div>
+                        <button class="btn-outline" style="margin-top: 30px; border-color:#38bdf8; color:#38bdf8;" onclick="location.reload()">Retake Assessment</button>
+                    </div>
+                `;
+
+                resultsSection.style.display = "block";
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+
+                setTimeout(() => {
+                    document.getElementById("scoreCircle").style.background = `conic-gradient(${colorCode} ${percentage}%, rgba(255,255,255,0.1) 0%)`;
+                }, 100);
+            });
+        });
+    </script>
+</body>
+</html>

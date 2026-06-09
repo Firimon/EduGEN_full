@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EduGEN – Profile</title>
+    <link rel="stylesheet" href="assets/css/styles.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+        /* --- GLOBAL LAYOUT --- */
+        body {
+            background-color: #020617; 
+            font-family: 'Poppins', sans-serif;
+            margin: 0; padding: 0;
+            color: #fff;
+        }
+
+        /* --- HEADER STYLES --- */
+        .top-nav {
+            display: flex; align-items: center; 
+            padding: 0 40px; height: 90px;
+            background: rgba(15, 23, 42, 0.9);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            position: relative; z-index: 100;
+        }
+
+        .logo-img {
+            height: 55px; width: auto; border-radius: 50%; object-fit: cover;
+            border: 2px solid rgba(79, 70, 229, 0.3); box-shadow: 0 0 15px rgba(79, 70, 229, 0.3);
+            transition: transform 0.3s ease;
+        }
+        .logo-img:hover { transform: scale(1.05); }
+
+        .nav-links a, .nav-auth a, .user-nav a {
+            text-decoration: none;
+            color: #94a3b8;
+            font-weight: 500; font-size: 0.95rem;
+            position: relative;
+            transition: color 0.3s;
+            padding-bottom: 5px;
+            display: inline-block;
+        }
+
+        .nav-links a:hover, .nav-auth a:hover, .user-nav a:hover { color: white; }
+
+        .nav-links a::after, .nav-auth a::after, .user-nav a::after {
+            content: '';
+            position: absolute;
+            bottom: -6px; left: 0;
+            width: 0%; height: 2px;
+            background: linear-gradient(90deg, #22c55e, #6366f1);
+            transition: width 0.3s ease-in-out;
+            box-shadow: 0 0 10px rgba(34, 197, 94, 0.5);
+        }
+
+        .nav-links a:hover::after, .nav-auth a:hover::after, .user-nav a:hover::after { width: 100%; }
+        a.active { color: white !important; font-weight: 600; }
+        a.active::after { width: 100% !important; }
+
+        /* --- PROFILE CARD STYLES --- */
+        .page-shell { padding-top: 50px; max-width: 1000px; margin: 0 auto; width: 90%; padding-bottom: 80px; }
+
+        .creative-card {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+            margin-top: 30px;
+        }
+
+        .form-content { position: relative; z-index: 1; }
+
+        /* Form Controls */
+        .modern-input-group { margin-bottom: 24px; }
+        .modern-label { display: block; font-size: 0.85rem; color: #94a3b8; margin-bottom: 10px; font-weight: 500; letter-spacing: 0.5px; }
+        
+        .modern-input, .modern-select, .modern-textarea {
+            width: 100%; background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(148, 163, 184, 0.2); color: #fff;
+            padding: 14px 18px; border-radius: 12px;
+            font-family: 'Poppins', sans-serif; font-size: 0.95rem; transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+        .modern-input:focus, .modern-select:focus, .modern-textarea:focus {
+            outline: none; border-color: #38bdf8;
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.2); background: rgba(30, 41, 59, 0.8);
+        }
+
+        /* Domain Selection */
+        .domain-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+        .domain-checkbox { display: none; }
+        .domain-chip {
+            padding: 10px 18px; background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 50px;
+            font-size: 0.85rem; color: #cbd5e1; cursor: pointer; transition: all 0.3s ease;
+            user-select: none; display: flex; align-items: center; gap: 8px;
+        }
+        .domain-checkbox:checked + .domain-chip {
+            background: linear-gradient(135deg, #4f46e5, #a855f7);
+            border-color: transparent; color: white;
+            box-shadow: 0 4px 15px rgba(124, 58, 237, 0.4); font-weight: 600;
+        }
+
+        .form-divider { height: 1px; background: linear-gradient(90deg, transparent, rgba(148, 163, 184, 0.2), transparent); margin: 35px 0; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+        @media(max-width: 700px) { .grid-2 { grid-template-columns: 1fr; } }
+
+        .save-btn {
+            width: 100%; padding: 16px; font-size: 1.1rem; font-weight: 600;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            color: white; border: none; border-radius: 14px;
+            cursor: pointer; transition: all 0.3s ease;
+            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2);
+        }
+        .save-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 25px rgba(99, 102, 241, 0.4);
+        }
+        .save-btn:active { transform: translateY(0); }
+
+        #profileMessage {
+            margin-top: 20px; text-align: center; font-weight: 500;
+            padding: 12px; border-radius: 10px; display: none;
+            animation: fadeIn 0.4s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
+</head>
+<body>
+
+    <header class="top-nav">
+        <div class="logo">
+            <img src="assets/picture/logoEdugen.png" alt="EduGEN Logo" class="logo-img" />
+        </div>
+        
+        <div style="display: flex; justify-content: space-between; flex: 1; align-items: center; width: 100%;">
+            <nav class="nav-links" style="margin-left: 40px; gap: 32px;">
+                <a href="home.html">Home</a>
+                <a href="assessment.html">Assessment</a> 
+                <a href="dashboard.html">Dashboard</a>
+                <a href="lab.html">AI Lab</a>
+                <a href="feedback.html">Feedback</a>
+            </nav>
+
+            <div class="nav-auth" style="display: flex; align-items: center; gap: 20px;">
+                <a href="about_us.html" style="color: #94a3b8;">About Us</a>
+                <span style="width: 1px; height: 20px; background: rgba(255,255,255,0.2);"></span> 
+                
+                <a href="job-engine.html" id="navJobs" class="auth-only" style="display:none;">Jobs</a>
+                
+                <div class="user-nav auth-only" id="userNavContainer" style="display:none; margin: 0; gap: 20px; align-items: center;">
+                    <a href="profile.html" id="profileLink" class="active">Profile</a>
+                    <a href="#" id="logoutLink">Logout</a>
+                    <span id="welcomeText" class="welcome-text" style="margin-left: 10px; color: #22c55e; font-weight:600;"></span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="page-shell">
+        <section class="section-header" style="text-align:center; margin-bottom: 40px;">
+            <h1 style="font-size: 2.6rem; margin-bottom: 10px;">Your <span style="color: #38bdf8;">Profile</span></h1>
+            <p style="color: #94a3b8; font-size: 1.1rem;">Sync your expertise and interests with the AE-GEN engine.</p>
+        </section>
+
+        <section class="creative-card" style="max-width:850px; margin:auto;">
+            <div class="form-content">
+                <form id="profileForm">
+                    <div class="grid-2">
+                        <div class="modern-input-group">
+                            <label class="modern-label">Full Name</label>
+                            <input type="text" id="pfName" class="modern-input" readonly style="opacity: 0.7; cursor: not-allowed;" />
+                        </div>
+                        <div class="modern-input-group">
+                            <label class="modern-label">Age</label>
+                            <input type="number" id="pfAge" class="modern-input" min="15" max="65" required placeholder="e.g. 21" />
+                        </div>
+                    </div>
+
+                    <div class="modern-input-group">
+                        <label class="modern-label">Academic Milestone</label>
+                        <select id="pfLevel" class="modern-select">
+                            <option value="secondary">Secondary School</option>
+                            <option value="pre-u">Foundation / Matriculation</option>
+                            <option value="undergrad">Undergraduate Degree</option>
+                            <option value="postgrad">Postgraduate Studies</option>
+                            <option value="working">Professional / Working Adult</option>
+                        </select>
+                    </div>
+
+                    <div class="form-divider"></div>
+
+                    <div class="modern-input-group">
+                        <label class="modern-label" style="font-size: 1rem; color: #fff; margin-bottom: 15px;">Target Clusters</label>
+                        <div class="domain-grid">
+                            <label><input type="checkbox" name="domain" value="data-ai" class="domain-checkbox"><span class="domain-chip">🤖 AI & Data</span></label>
+                            <label><input type="checkbox" name="domain" value="software" class="domain-checkbox"><span class="domain-chip">💻 Software Eng.</span></label>
+                            <label><input type="checkbox" name="domain" value="business" class="domain-checkbox"><span class="domain-chip">📈 Finance/Biz</span></label>
+                            <label><input type="checkbox" name="domain" value="creative" class="domain-checkbox"><span class="domain-chip">🎨 Design/UX</span></label>
+                            <label><input type="checkbox" name="domain" value="people" class="domain-checkbox"><span class="domain-chip">👥 Social/HR</span></label>
+                            <label><input type="checkbox" name="domain" value="marketing" class="domain-checkbox"><span class="domain-chip">📢 Marketing</span></label>
+                        </div>
+                    </div>
+
+                    <div class="form-divider"></div>
+
+                    <div class="modern-input-group">
+                        <label class="modern-label">Working Style Personality</label>
+                        <select id="pfWorkStyle" class="modern-select">
+                            <option value="structured">Highly Structured / Logical</option>
+                            <option value="creative">Creative / Agile</option>
+                            <option value="social">Collaborative / People-First</option>
+                        </select>
+                    </div>
+
+                    <div class="grid-2">
+                        <div class="modern-input-group">
+                            <label class="modern-label">Soft Strengths</label>
+                            <textarea id="pfStrengths" class="modern-textarea" rows="3" placeholder="e.g. Analytical Thinking, Communication..."></textarea>
+                        </div>
+                        <div class="modern-input-group">
+                            <label class="modern-label">Technical Toolkit</label>
+                            <textarea id="pfSkills" class="modern-textarea" rows="3" placeholder="e.g. Python, SQL, Figma, Git..."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="modern-input-group">
+                        <label class="modern-label">Professional Bio / Career Goals</label>
+                        <textarea id="pfAbout" class="modern-textarea" rows="4" placeholder="Briefly describe your career aspirations..."></textarea>
+                    </div>
+
+                    <button type="submit" class="save-btn" id="saveBtn">Save & Sync Profile</button>
+                    <div id="profileMessage"></div>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <footer style="text-align: center; padding: 40px; color: #64748b; font-size: 0.9rem;">
+        <p>© 2026 EduGEN. AI-Powered Career Intelligence.</p>
+    </footer>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", async () => {
+            const user = JSON.parse(localStorage.getItem("edugen_user") || "null");
+            const msg = document.getElementById("profileMessage");
+            const saveBtn = document.getElementById("saveBtn");
+
+            // --- REDIRECT IF GUEST ---
+            if (!user || !user.id) {
+                alert("Please log in to customize your profile.");
+                window.location.href = "login.html";
+                return;
+            }
+
+            // --- UI AUTH SYNC ---
+            document.getElementById("navJobs").style.display = "block";
+            document.getElementById("userNavContainer").style.display = "flex";
+            document.getElementById("welcomeText").textContent = "Hi, " + user.name;
+            document.getElementById("pfName").value = user.name;
+
+            // Logout Logic
+            document.getElementById("logoutLink").addEventListener("click", () => {
+                localStorage.removeItem("edugen_user");
+                window.location.href = "home.html";
+            });
+
+            // --- FETCH DATA FROM MYSQL ---
+            try {
+                const response = await fetch(`https://edugen-backend.onrender.com/api/profile/${user.id}`);
+                const data = await response.json();
+                
+                if (data.success && data.profile) {
+                    const p = data.profile;
+                    document.getElementById("pfAge").value = p.age || "";
+                    document.getElementById("pfLevel").value = p.academic_level || "undergrad";
+                    document.getElementById("pfWorkStyle").value = p.work_style || "structured";
+                    document.getElementById("pfStrengths").value = p.strengths || "";
+                    document.getElementById("pfSkills").value = p.skills || "";
+                    document.getElementById("pfAbout").value = p.about || "";
+
+                    if (p.domains) {
+                        p.domains.split(',').forEach(dom => {
+                            const cb = document.querySelector(`input[name="domain"][value="${dom}"]`);
+                            if(cb) cb.checked = true;
+                        });
+                    }
+                }
+            } catch (err) { console.error("Database fetch error:", err); }
+
+            // --- SAVE TO MYSQL ---
+            document.getElementById("profileForm").addEventListener("submit", async (e) => {
+                e.preventDefault();
+                saveBtn.textContent = "Syncing with Database...";
+                saveBtn.disabled = true;
+
+                const selectedDomains = Array.from(document.querySelectorAll('input[name="domain"]:checked')).map(cb => cb.value);
+                const profileData = {
+                    user_id: user.id,
+                    age: document.getElementById("pfAge").value,
+                    academicLevel: document.getElementById("pfLevel").value,
+                    preferredDomains: selectedDomains,
+                    workStyle: document.getElementById("pfWorkStyle").value,
+                    strengths: document.getElementById("pfStrengths").value,
+                    skills: document.getElementById("pfSkills").value,
+                    about: document.getElementById("pfAbout").value
+                };
+
+                try {
+                    const res = await fetch("https://edugen-backend.onrender.com/api/profile", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(profileData)
+                    });
+                    const result = await res.json();
+
+                    if (result.success) {
+                        // Keep local storage updated for instant UI changes on other pages
+                        localStorage.setItem("edugen_profile", JSON.stringify(profileData));
+                        
+                        msg.textContent = "Profile successfully synced to MySQL! ☁️";
+                        msg.style.display = "block";
+                        msg.style.background = "rgba(16, 185, 129, 0.1)";
+                        msg.style.color = "#10b981";
+                    }
+                } catch (err) {
+                    msg.textContent = "Sync failed. Check if Flask server is online.";
+                    msg.style.display = "block";
+                    msg.style.background = "rgba(244, 63, 94, 0.1)";
+                    msg.style.color = "#f43f5e";
+                } finally {
+                    saveBtn.textContent = "Save & Sync Profile";
+                    saveBtn.disabled = false;
+                    setTimeout(() => { msg.style.display = "none"; }, 4000);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

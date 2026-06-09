@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>About Us - EduGEN</title>
+    <link rel="stylesheet" href="assets/css/styles.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+        /* --- LAYOUT & THEME --- */
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            background-color: #020617; 
+            position: relative;
+        }
+        main {
+            flex: 1;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1; 
+        }
+
+        /* --- SPOTLIGHT EFFECT --- */
+        .spotlight {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; 
+            z-index: 0;
+            background: radial-gradient(
+                600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), 
+                rgba(79, 70, 229, 0.15), 
+                transparent 40%
+            );
+        }
+
+        /* --- LOGO --- */
+        .logo-img {
+            height: 55px;
+            width: auto;
+            border-radius: 50%; 
+            object-fit: cover;
+            border: 2px solid rgba(79, 70, 229, 0.3);
+            box-shadow: 0 0 15px rgba(79, 70, 229, 0.3);
+            transition: transform 0.3s ease;
+        }
+        .logo-img:hover {
+            transform: scale(1.05);
+        }
+
+        /* --- ABOUT PAGE STYLES --- */
+        .mission-card {
+            background: rgba(30, 41, 59, 0.6);
+            border-left: 4px solid var(--primary);
+            padding: 30px;
+            border-radius: 0 12px 12px 0;
+            margin-bottom: 50px;
+        }
+
+        .value-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 25px;
+            border-radius: 16px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        .value-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.06);
+            border-color: var(--primary);
+        }
+        .value-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            display: inline-block;
+        }
+
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            margin-top: 40px;
+            max-width: 800px; 
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .team-member {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.02);
+            padding: 30px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: transform 0.3s ease;
+        }
+        .team-member:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+        }
+        .member-img {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid rgba(79, 70, 229, 0.5);
+            margin-bottom: 15px;
+            background: #1e293b;
+        }
+        .member-role {
+            color: var(--primary);
+            font-size: 0.9rem;
+            font-weight: 500;
+            display: block;
+            margin-top: 5px;
+        }
+
+    </style>
+</head>
+
+<body>
+    <div class="spotlight"></div>
+
+    <header class="top-nav">
+        <div class="logo">
+            <img src="assets/picture/logoEdugen.png" alt="EduGEN Logo" class="logo-img" />
+        </div>
+        
+        <div style="display: flex; justify-content: space-between; flex: 1; align-items: center; width: 100%;">
+            <nav class="nav-links" style="margin-left: 40px; gap: 32px;">
+                <a href="home.html">Home</a>
+                <a href="assessment.html">Assessment</a> 
+                <a href="dashboard.html">Dashboard</a>
+                <a href="lab.html">AI Lab</a>
+                <a href="feedback.html">Feedback</a>
+            </nav>
+
+            <div class="nav-auth" style="display: flex; align-items: center; gap: 20px;">
+                <a href="about_us.html" class="active" style="color: var(--text);">About Us</a>
+                <span style="width: 1px; height: 20px; background: rgba(255,255,255,0.2);"></span> 
+
+                <a href="login.html" id="navLoginLink">Login</a>
+                <a href="signup.html" id="navSignupLink" class="btn" style="padding: 6px 20px;">Sign Up</a>
+                
+                <a href="job-engine.html" id="navJobs" class="auth-only" style="display:none;">Jobs</a>
+                <div class="user-nav auth-only" id="userNavContainer" style="display:none; margin: 0;">
+                    <a href="profile.html" id="profileLink">Profile</a>
+                    <a href="#" id="logoutLink">Logout</a>
+                    <span id="welcomeText" class="welcome-text" style="margin-left: 10px; color: var(--accent);"></span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="section" style="padding-top: 60px; text-align: center;">
+            <div class="section-header">
+                <h1 style="font-size: 3rem; margin-bottom: 15px;">Who We Are</h1>
+                <p style="color: var(--muted); max-width: 600px; margin: 0 auto;">
+                    We are bridging the gap between education and employment using advanced Artificial Intelligence.
+                </p>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="mission-card">
+                <h2 style="margin-top: 0;">Our Mission</h2>
+                <p style="line-height: 1.8; color: #cbd5e1;">
+                    EduGEN was founded with a single goal: to democratize career guidance. We believe that every student, regardless of their background, deserves access to world-class career intelligence. By combining <strong>Generative AI</strong> with real-time labor market data, we provide personalized roadmaps that adapt as fast as the world changes.
+                </p>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2 style="text-align: center; margin-bottom: 40px;">Why EduGEN?</h2>
+            <div class="grid-3">
+                <div class="value-card">
+                    <span class="value-icon">💡</span>
+                    <h3>Innovation First</h3>
+                    <p style="font-size: 0.9rem; color: var(--muted);">We don't just follow trends; we predict them using predictive AI models.</p>
+                </div>
+                <div class="value-card">
+                    <span class="value-icon">🤝</span>
+                    <h3>Student Centric</h3>
+                    <p style="font-size: 0.9rem; color: var(--muted);">Every feature we build is designed to solve real student anxieties about the future.</p>
+                </div>
+                <div class="value-card">
+                    <span class="value-icon">🔐</span>
+                    <h3>Data Privacy</h3>
+                    <p style="font-size: 0.9rem; color: var(--muted);">Your career data is personal. We use enterprise-grade encryption to keep it safe.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="section" style="margin-bottom: 60px;">
+            <h2 style="text-align: center; margin-bottom: 30px;">Meet the Team</h2>
+            
+            <div class="team-grid">
+                <div class="team-member">
+                    <img src="https://api.dicebear.com/9.x/avataaars/svg?seed=Ryan&top=shortFlat&accessoriesProbability=0&facialHairProbability=0&skinColor=edb98a&clothing=blazerAndShirt" alt="Muhammad Firman" class="member-img">
+                    <h3 style="font-size: 1.2rem; margin-bottom: 5px;">Muhammad Firman</h3>
+                    <span class="member-role">Co-Founder</span>
+                </div>
+
+                <div class="team-member">
+                    <img src="https://api.dicebear.com/9.x/avataaars/svg?seed=Nolan&top=shortWaved&accessoriesProbability=0&facialHairProbability=0&skinColor=ffdfbf&clothing=collarAndSweater" alt="Muhammad Fadzlan" class="member-img">
+                    <h3 style="font-size: 1.2rem; margin-bottom: 5px;">Muhammad Fadzlan</h3>
+                    <span class="member-role">Co-Founder</span>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <p>© 2026 EduGEN. AI-Powered Career Intelligence.</p>
+    </footer>
+
+    <script src="assets/js/auth.js"></script>
+    <script>
+        // MOUSE SPOTLIGHT
+        document.addEventListener('mousemove', (e) => {
+            document.body.style.setProperty('--mouse-x', e.clientX + 'px');
+            document.body.style.setProperty('--mouse-y', e.clientY + 'px');
+        });
+
+        // AUTH LOGIC
+        document.addEventListener("DOMContentLoaded", () => {
+           const loginLink = document.getElementById("navLoginLink");
+           const signupLink = document.getElementById("navSignupLink");
+           const navJobs = document.getElementById("navJobs");
+           const userNavContainer = document.getElementById("userNavContainer");
+           const logoutLink = document.getElementById("logoutLink");
+           const welcomeText = document.getElementById("welcomeText");
+
+           let user = null;
+           try {
+               const raw = localStorage.getItem("edugen_user");
+               user = raw ? JSON.parse(raw) : null;
+           } catch { user = null; }
+
+           if (user && user.name) {
+               loginLink.style.display = "none";
+               signupLink.style.display = "none";
+               navJobs.style.display = "block";
+               userNavContainer.style.display = "flex";
+               welcomeText.textContent = "Hi, " + user.name;
+           } else {
+               loginLink.style.display = "block";
+               signupLink.style.display = "inline-flex";
+               navJobs.style.display = "none";
+               userNavContainer.style.display = "none";
+           }
+           
+           logoutLink?.addEventListener("click", (e) => {
+               e.preventDefault();
+               localStorage.removeItem("edugen_user");
+               window.location.href = "home.html";
+           });
+        });
+    </script>
+</body>
+</html>

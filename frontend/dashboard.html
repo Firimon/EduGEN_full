@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard - EduGEN</title>
+    <link rel="stylesheet" href="assets/css/styles.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+        /* --- LAYOUT FIXES --- */
+        body { display: flex; flex-direction: column; min-height: 100vh; }
+        main { flex: 1; width: 100%; max-width: 1200px; margin: 0 auto; }
+
+        /* --- LOGO STYLES --- */
+        .logo-img { height: 55px; width: auto; border-radius: 50%; object-fit: cover; border: 2px solid rgba(79, 70, 229, 0.3); box-shadow: 0 0 15px rgba(79, 70, 229, 0.3); transition: transform 0.3s ease; }
+        .logo-img:hover { transform: scale(1.05); }
+
+        /* --- CUSTOM DASHBOARD WIDGET STYLES --- */
+        .skill-item { margin-bottom: 20px; }
+        .skill-header { display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; color: var(--muted); margin-bottom: 8px; }
+        .progress-track { background: rgba(255, 255, 255, 0.08); height: 10px; border-radius: 99px; overflow: hidden; box-shadow: inset 0 2px 4px rgba(0,0,0,0.2); }
+        .progress-fill { height: 100%; border-radius: 99px; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
+        
+        .badge-focus { background: rgba(244, 63, 94, 0.15); color: #f43f5e; padding: 2px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 600; margin-left: 10px; }
+        .xp-tag { background: rgba(16, 185, 129, 0.2); color: #34d399; padding: 4px 10px; border-radius: 99px; font-size: 0.75rem; font-weight: 700; margin-left: auto; transition: all 0.3s ease; }
+
+        .level-bar-container { margin-top: 15px; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 12px; border: 1px solid rgba(79, 70, 229, 0.3); position: relative; overflow: hidden; }
+
+        @keyframes levelUpGlow { 0% { box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.7); } 70% { box-shadow: 0 0 20px 10px rgba(79, 70, 229, 0); } 100% { box-shadow: 0 0 0 0 rgba(79, 70, 229, 0); } }
+        .level-up-active { animation: levelUpGlow 1.5s ease-out; border-color: #10b981 !important; }
+
+        .todo-item { display: flex; align-items: center; gap: 12px; padding: 15px 12px; border-radius: 8px; margin-bottom: 8px; background: rgba(255,255,255,0.02); border: 1px solid rgba(148, 163, 184, 0.1); color: white; font-size: 0.9rem; cursor: pointer; transition: all 0.2s; }
+        .todo-item:hover { background: rgba(255,255,255,0.05); border-color: var(--primary); transform: translateX(5px); }
+        .todo-check { width: 22px; height: 22px; border: 2px solid var(--primary); border-radius: 6px; display: flex; align-items: center; justify-content: center; color: transparent; font-size: 14px; transition: all 0.2s; }
+        .todo-item.completed .todo-check { background: var(--primary); color: white; }
+        .todo-item.completed .todo-text { text-decoration: line-through; opacity: 0.5; }
+        .todo-item.completed .xp-tag { background: rgba(255,255,255,0.1); color: var(--muted); }
+
+        .saved-career-card { background: rgba(0,0,0,0.2); border: 1px solid rgba(56, 189, 248, 0.3); padding: 15px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; transition: transform 0.2s; }
+        .saved-career-card:hover { transform: scale(1.02); border-color: #38bdf8; }
+        .saved-career-card h4 { font-size: 1rem; }
+
+        .achievement-grid { display: flex; gap: 15px; margin-top: 15px; }
+        .badge-icon { width: 60px; height: 60px; border-radius: 50%; background: rgba(0,0,0,0.3); border: 2px dashed rgba(148, 163, 184, 0.3); display: flex; align-items: center; justify-content: center; font-size: 1.8rem; filter: grayscale(100%); opacity: 0.5; transition: all 0.5s ease; position: relative; }
+        .badge-icon.unlocked { filter: grayscale(0%); opacity: 1; border: 2px solid #f59e0b; background: rgba(245, 158, 11, 0.1); box-shadow: 0 0 15px rgba(245, 158, 11, 0.3); }
+        .badge-icon:hover::after { content: attr(data-tooltip); position: absolute; bottom: -30px; background: var(--bg-alt); padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; color: white; white-space: nowrap; z-index: 10; border: 1px solid var(--border); }
+        
+        /* --- COMPATIBILITY MODAL STYLES --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(2, 6, 23, 0.85);
+            z-index: 1000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(8px);
+        }
+
+        .modal-content {
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-top: 4px solid #a855f7;
+            border-radius: 20px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+            padding: 30px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 25px;
+            font-size: 2rem;
+            cursor: pointer;
+            color: #94a3b8;
+            transition: color 0.3s;
+            line-height: 1;
+        }
+
+        .close-btn:hover {
+            color: #f43f5e;
+        }
+    </style>
+</head>
+<body>
+
+    <header class="top-nav">
+        <div class="logo"><img src="assets/picture/logoEdugen.png" alt="EduGEN" class="logo-img" /></div>
+        <div style="display: flex; justify-content: space-between; flex: 1; align-items: center; width: 100%;">
+            <nav class="nav-links" style="margin-left: 40px; gap: 32px;">
+                <a href="home.html">Home</a>
+                <a href="assessment.html">Assessment</a> 
+                <a href="dashboard.html" class="active">Dashboard</a>
+                <a href="lab.html">AI Lab</a>
+                <a href="feedback.html">Feedback</a>
+            </nav>
+            <div class="nav-auth" style="display: flex; align-items: center; gap: 20px;">
+                <a href="about_us.html" style="color: #94a3b8; text-decoration: none; font-size: 0.9rem; margin-right: 10px;">About Us</a>
+                <a href="login.html" id="navLoginLink">Login</a>
+                <a href="signup.html" id="navSignupLink" class="btn btn-primary" style="padding: 6px 20px;">Sign Up</a>
+                <a href="job-engine.html" id="navJobs" class="auth-only">Jobs</a>
+                <div class="user-nav auth-only" id="userNavContainer" style="margin: 0;">
+                    <a href="profile.html" id="profileLink">Profile</a>
+                    <a href="#" id="logoutLink">Logout</a>
+                    <span id="welcomeText" class="welcome-text" style="margin-left: 10px; color: var(--accent);"></span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="section-header" style="margin-top: 40px;">
+            <h2>Your Career Dashboard</h2>
+            <p>Complete missions, view your assessment results, and earn XP to level up.</p>
+        </section>
+
+        <div class="grid-2" style="gap: 32px; align-items: start;">
+            <div style="display: flex; flex-direction: column; gap: 32px;">
+                <div class="card">
+                    <h3>Profile Snapshot</h3>
+                    <div style="margin-top: 20px;">
+                        <p id="dashCluster" style="margin-bottom: 10px; font-weight: 500;">Dominant Trait: <span style="color: var(--muted);">Take Assessment First</span></p>
+                        <p id="dashSavedCount" style="margin-bottom: 10px;">Careers Bookmarked: <span style="color: white; font-weight: 600;">0</span></p>
+                        
+                        <div class="level-bar-container" id="levelContainer">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem;">
+                                <span>Rank: <strong id="rankTitle" style="color: var(--primary); font-size: 1.1rem;">Rookie</strong></span>
+                                <span style="color: var(--muted);"><span id="currentXpText">250</span> / <span id="maxXpText">1000</span> XP</span>
+                            </div>
+                            <div class="progress-track" style="height: 8px;">
+                                <div id="xpBarFill" class="progress-fill" style="width: 25%; background: linear-gradient(90deg, #4f46e5, #c084fc);"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <div>
+                            <h3 style="margin:0;">Saved Career Paths</h3>
+                            <p style="font-size: 0.9rem; color: var(--muted); margin:0;">Bookmarked from the Job Explorer.</p>
+                        </div>
+                        <a href="job-engine.html" id="exploreMoreBtn" class="btn" style="padding: 6px 12px; font-size: 0.8rem;">Explore More</a>
+                    </div>
+                    
+                    <div id="savedPathsList" class="saved-careers">
+                        <div style="text-align: center; padding: 20px;">
+                            <p style="color: var(--muted);">Loading your saved jobs from database...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Active Missions</h3>
+                    <p style="margin-bottom: 15px; font-size: 0.9rem; color: var(--muted);">Complete tasks to earn XP and rank up.</p>
+                    <div class="todo-list" id="todoList">
+                        <div class="todo-item" data-task="0" data-xp="250">
+                            <div class="todo-check">✓</div><span class="todo-text">Complete the Suitability Assessment</span><span class="xp-tag">+250 XP</span>
+                        </div>
+                        <div class="todo-item" data-task="1" data-xp="150">
+                            <div class="todo-check">✓</div><span class="todo-text">Save at least 1 Career in Job Explorer</span><span class="xp-tag">+150 XP</span>
+                        </div>
+                        <div class="todo-item" data-task="2" data-xp="350">
+                            <div class="todo-check">✓</div><span class="todo-text">Use the Resume Optimizer in AI Lab</span><span class="xp-tag">+350 XP</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 32px;">
+                <div class="card">
+                    <h3>Your Trophy Case</h3>
+                    <p style="font-size: 0.8rem; color: var(--muted);">Unlock badges by exploring EduGEN features.</p>
+                    <div class="achievement-grid">
+                        <div class="badge-icon unlocked" data-tooltip="Early Adopter: Created an Account">🚀</div>
+                        <div class="badge-icon" id="badgeAssessment" data-tooltip="Self-Aware: Finished Assessment">🧠</div>
+                        <div class="badge-icon" id="badgeLab" data-tooltip="Tech Savvy: Used AI Tools">🤖</div>
+                        <div class="badge-icon" id="badgeLevel" data-tooltip="Level Up: Hit Intermediate Rank">⭐</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Competency Breakdown</h3>
+                    <p style="font-size: 0.8rem; color: var(--muted); margin-bottom: 20px;">Based on your assessment results.</p>
+                    <div id="skillsContainer"></div>
+                    
+                    <div id="actionRequiredBox" style="display: none; margin-top: 15px; padding: 12px; background: rgba(244, 63, 94, 0.05); border-left: 3px solid #f43f5e; border-radius: 4px;">
+                        <p style="font-size: 0.85rem; color: #e2e8f0;">
+                            <strong>Action Required:</strong> Your <span id="weakestSkill" style="color: #f43f5e; font-weight: 600;">Creativity</span> score needs focus. Try using the Skill Gap Analyzer in the AI Lab!
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="compatibilityModal" class="modal-overlay">
+        <div class="modal-content">
+            <span id="closeCompModal" class="close-btn">&times;</span>
+            <div style="display:flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+                <span style="font-size: 1.5rem;">🎯</span>
+                <h2 id="compModalTitle" style="color: #a855f7; margin: 0; font-size: 1.4rem;">Compatibility Match</h2>
+            </div>
+            <div id="compModalBody" style="color: #cbd5e1; line-height: 1.6; font-size: 0.95rem;">
+                Loading analysis...
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer" style="text-align: center; padding: 20px; color: #64748b; margin-top: auto;">
+       © 2026 EduGEN. AI-Powered Career Intelligence.
+    </footer>
+
+    <script src="assets/js/auth.js"></script>
+    
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            // --- DATA INITIALIZATION ---
+            let user = null;
+            try {
+                const raw = localStorage.getItem("edugen_user");
+                user = raw ? JSON.parse(raw) : null;
+            } catch { user = null; }
+
+            // ==========================================
+            // FETCH SAVED JOBS FROM MYSQL DATABASE
+            // ==========================================
+            async function loadSavedJobs() {
+                const savedPathContainer = document.getElementById("savedPathsList");
+                const dashSavedCount = document.getElementById("dashSavedCount");
+
+                if (!user || !user.id) {
+                    savedPathContainer.innerHTML = `
+                        <div style="text-align: center; padding: 20px; border: 1px dashed var(--border); border-radius: 12px;">
+                            <p>Please log in to see your saved jobs.</p>
+                            <a href="login.html" class="btn btn-outline" style="margin-top: 10px; font-size: 0.8rem;">Login</a>
+                        </div>`;
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`https://edugen-backend.onrender.com/api/saved_jobs/${user.id}`);
+                    const data = await response.json();
+
+                    if (data.success && data.jobs.length > 0) {
+                        dashSavedCount.innerHTML = `Careers Bookmarked: <span style="color: white; font-weight: 600;">${data.jobs.length}</span>`;
+                        savedPathContainer.innerHTML = ""; 
+                        
+                        data.jobs.forEach(job => {
+                            savedPathContainer.innerHTML += `
+                                <div class="saved-career-card">
+                                    <div>
+                                        <h4 style="color: white; margin-bottom: 5px;">${job.job_title}</h4>
+                                        <span style="font-size: 0.75rem; color: #38bdf8; background: rgba(56, 189, 248, 0.1); padding: 2px 8px; border-radius: 4px;">Saved via Job Explorer</span>
+                                    </div>
+                                    <button onclick="viewCompatibility('${job.job_title}')" class="btn" style="padding: 6px 12px; font-size: 0.8rem; background:transparent; border: 1px solid #38bdf8; color: #38bdf8; cursor: pointer;">View</button>
+                                </div>
+                            `;
+                        });
+
+                        // Mission Update logic
+                        let savedTasks = JSON.parse(localStorage.getItem('edugen_missions')) || {};
+                        if (!savedTasks["1"]) {
+                            savedTasks["1"] = true;
+                            localStorage.setItem('edugen_missions', JSON.stringify(savedTasks));
+                            updateXPUI(); 
+                        }
+
+                    } else {
+                        dashSavedCount.innerHTML = `Careers Bookmarked: <span style="color: white; font-weight: 600;">0</span>`;
+                        savedPathContainer.innerHTML = `
+                            <div style="text-align: center; padding: 20px; border: 1px dashed var(--border); border-radius: 12px;">
+                                <span style="font-size: 24px;">🔖</span>
+                                <p style="margin-top: 10px;">No careers saved yet.</p>
+                                <a href="job-engine.html" class="btn btn-outline" style="margin-top: 10px; font-size: 0.8rem;">Explore Jobs</a>
+                            </div>
+                        `;
+                    }
+                } catch (error) {
+                    console.error("Error fetching jobs:", error);
+                    savedPathContainer.innerHTML = `<p style="color: #f43f5e; text-align:center;">Failed to connect to database.</p>`;
+                }
+            }
+            
+            loadSavedJobs();
+
+         // ==========================================
+            // SYNC SKILLS WITH ASSESSMENT DATA (ROLE-BASED FIX)
+            // ==========================================
+            
+            // 1. Get data specific to the logged-in user
+            let currentUser = JSON.parse(localStorage.getItem("edugen_user")) || { id: "guest" };
+            const savedResult = JSON.parse(localStorage.getItem("edugen_assessment_result_" + currentUser.id));
+            
+            // 2. Define minimum industry benchmarks required for each target role
+            const roleBenchmarks = {
+                "Software Engineer": { "Logic & Analysis": 75, "Creativity & Design": 40, "Business & Strategy": 40 },
+                "Data Scientist": { "Logic & Analysis": 80, "Creativity & Design": 35, "Business & Strategy": 45 },
+                "UI/UX Designer": { "Logic & Analysis": 45, "Creativity & Design": 75, "Business & Strategy": 50 },
+                "Cybersecurity Analyst": { "Logic & Analysis": 75, "Creativity & Design": 30, "Business & Strategy": 40 },
+                "Product Manager": { "Logic & Analysis": 55, "Creativity & Design": 50, "Business & Strategy": 75 },
+                "Digital Marketer": { "Logic & Analysis": 40, "Creativity & Design": 60, "Business & Strategy": 70 }
+            };
+
+            // Load scored percentages, default to 0 if no test has been taken yet
+            let userSkills = [
+                { name: "Logic & Analysis", score: savedResult ? savedResult.logic : 0, color: "linear-gradient(90deg, #4f46e5, #818cf8)" },
+                { name: "Creativity & Design", score: savedResult ? savedResult.design : 0, color: "linear-gradient(90deg, #a855f7, #d8b4fe)" },
+                { name: "Business & Strategy", score: savedResult ? savedResult.business : 0, color: "linear-gradient(90deg, #22c55e, #86efac)" }
+            ];
+
+            let targetedRole = savedResult ? savedResult.chosenCareer : null;
+            let criticalGapSkill = null;
+            let maxGapValue = -Infinity;
+
+            if (savedResult && targetedRole && roleBenchmarks[targetedRole]) {
+                // Dynamically display their highest score as the Dominant Trait
+                let highestScore = Math.max(savedResult.logic, savedResult.design, savedResult.business);
+                let dominantTraitText = "Logic & Analysis";
+                
+                if (highestScore === savedResult.logic) dominantTraitText = "Logic & Analysis";
+                else if (highestScore === savedResult.design) dominantTraitText = "Creativity & Design";
+                else if (highestScore === savedResult.business) dominantTraitText = "Business & Strategy";
+
+                document.getElementById("dashCluster").innerHTML = `Dominant Trait: <span style="color: #10b981;">${dominantTraitText}</span>`;
+
+                // Calculate which skill has the largest negative gap compared to the role benchmark
+                userSkills.forEach(skill => {
+                    let benchmark = roleBenchmarks[targetedRole][skill.name] || 50;
+                    let gap = benchmark - skill.score; // Positive gap means they are below benchmark
+                    
+                    if (gap > maxGapValue) {
+                        maxGapValue = gap;
+                        criticalGapSkill = skill.name;
+                    }
+                });
+            }
+
+            const skillsContainer = document.getElementById("skillsContainer");
+            const actionRequiredBox = document.getElementById("actionRequiredBox");
+            const weakestSkillText = document.getElementById("weakestSkill");
+            
+            // Show the warning box only if they are missing benchmark targets for their career choice
+            if (savedResult && maxGapValue > 0 && criticalGapSkill) {
+                weakestSkillText.textContent = criticalGapSkill.split(" ")[0]; // Grab just the first word (e.g., 'Logic')
+                actionRequiredBox.style.display = "block"; 
+            } else {
+                actionRequiredBox.style.display = "none"; // Hide if passing all benchmarks or new user
+            }
+
+            // Render competency items to container
+            skillsContainer.innerHTML = "";
+            userSkills.forEach(skill => {
+                // Skill flags a warning if it is below the role's baseline benchmark threshold
+                let benchmarkTarget = (savedResult && targetedRole) ? roleBenchmarks[targetedRole][skill.name] : 50;
+                const needsFocus = savedResult && (skill.score < benchmarkTarget);
+                const badgeHtml = needsFocus ? `<span class="badge-focus">Needs Focus</span>` : "";
+                
+                skillsContainer.innerHTML += `
+                    <div class="skill-item">
+                        <div class="skill-header"><div><span style="color: white;">${skill.name}</span>${badgeHtml}</div><span>${skill.score}%</span></div>
+                        <div class="progress-track"><div class="progress-fill" style="width: 0%; background: ${skill.color};" data-target="${skill.score}%"></div></div>
+                    </div>`;
+            });
+
+            setTimeout(() => { document.querySelectorAll('.progress-fill').forEach(bar => { bar.style.width = bar.getAttribute('data-target'); }); }, 300);
+
+            // ==========================================
+            // INTERACTIVE XP & MISSION LOGIC
+            // ==========================================
+            const todoItems = document.querySelectorAll('.todo-item');
+            const xpBarFill = document.getElementById('xpBarFill');
+            const currentXpText = document.getElementById('currentXpText');
+            const rankTitle = document.getElementById('rankTitle');
+            const levelContainer = document.getElementById('levelContainer');
+            const badgeLevel = document.getElementById('badgeLevel');
+            const badgeAssessment = document.getElementById('badgeAssessment');
+            const badgeLab = document.getElementById('badgeLab');
+            
+            function updateXPUI() {
+                let savedTasks = JSON.parse(localStorage.getItem('edugen_missions')) || {}; 
+                let currentXP = 250; // Base XP
+                
+                todoItems.forEach(item => {
+                    const taskId = item.getAttribute('data-task');
+                    const taskXp = parseInt(item.getAttribute('data-xp'));
+                    if (savedTasks[taskId]) {
+                        currentXP += taskXp;
+                        item.classList.add('completed');
+                    } else {
+                        item.classList.remove('completed');
+                    }
+                });
+
+                currentXpText.textContent = currentXP;
+                let percentage = (currentXP / 1000) * 100;
+                xpBarFill.style.width = Math.min(percentage, 100) + "%";
+
+                // Rank update
+                if (currentXP >= 1000) {
+                    rankTitle.textContent = "Intermediate";
+                    rankTitle.style.color = "#10b981"; 
+                    badgeLevel.classList.add('unlocked');
+                } else {
+                    rankTitle.textContent = "Rookie";
+                    rankTitle.style.color = "var(--primary)"; 
+                }
+
+                if(savedTasks["0"]) badgeAssessment.classList.add('unlocked');
+                if(savedTasks["2"]) badgeLab.classList.add('unlocked');
+            }
+
+            todoItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    let currentTasks = JSON.parse(localStorage.getItem('edugen_missions')) || {}; 
+                    const taskId = item.getAttribute('data-task');
+                    item.classList.toggle('completed');
+                    currentTasks[taskId] = item.classList.contains('completed');
+                    localStorage.setItem('edugen_missions', JSON.stringify(currentTasks));
+                    
+                    levelContainer.classList.remove('level-up-active');
+                    void levelContainer.offsetWidth; 
+                    levelContainer.classList.add('level-up-active');
+
+                    updateXPUI();
+                });
+            });
+
+            updateXPUI();
+        });
+
+        // ==========================================
+        // COMPATIBILITY MODAL & AI LOGIC
+        // ==========================================
+        const compModal = document.getElementById("compatibilityModal");
+        const closeCompModal = document.getElementById("closeCompModal");
+        
+        closeCompModal.onclick = () => compModal.style.display = "none";
+        window.onclick = (e) => { if (e.target == compModal) compModal.style.display = "none"; };
+
+        async function viewCompatibility(jobTitle) {
+            const titleEl = document.getElementById("compModalTitle");
+            const bodyEl = document.getElementById("compModalBody");
+
+            // Open Modal and show loading state
+            compModal.style.display = "flex";
+            titleEl.innerHTML = `Compatibility: <span style="color: white;">${jobTitle}</span>`;
+            bodyEl.innerHTML = `
+                <div style="text-align: center; padding: 30px;">
+                    <div style="font-size: 1.1rem; color: #38bdf8; font-weight: 600;">🤖 AI is analyzing your fit...</div>
+                    <div style="font-size: 0.85rem; color: #64748b; margin-top: 5px;">Comparing your profile against standard requirements.</div>
+                </div>
+            `;
+
+            // Grab user data from local storage
+            let userSkills = "General knowledge";
+            let academicLevel = "Undergraduate";
+            try {
+                const profile = JSON.parse(localStorage.getItem("edugen_profile"));
+                if (profile) {
+                    if (profile.skills) userSkills = profile.skills;
+                    if (profile.academicLevel) academicLevel = profile.academicLevel;
+                }
+            } catch (e) { }
+
+            // Fetch analysis from your Python Backend
+            try {
+                const response = await fetch("https://edugen-backend.onrender.com/api/analyze_job", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        job_title: jobTitle,
+                        skills: userSkills,
+                        level: academicLevel
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Format bold text and new lines
+                    let formattedText = data.report.replace(/\*\*(.*?)\*\*/g, '<strong style="color:white;">$1</strong>');
+                    formattedText = formattedText.replace(/\n/g, '<br>');
+                    bodyEl.innerHTML = formattedText;
+                } else {
+                    bodyEl.innerHTML = `<div style="color: #f43f5e; text-align:center;">Error: ${data.error}</div>`;
+                }
+            } catch (error) {
+                bodyEl.innerHTML = `<div style="color: #f43f5e; text-align:center;">Connection error. Is your Flask backend running?</div>`;
+            }
+        }
+    </script>
+</body>
+</html>
