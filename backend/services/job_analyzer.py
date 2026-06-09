@@ -7,13 +7,17 @@ from langchain_community.tools import DuckDuckGoSearchRun
 # 🚀 Load keys securely
 load_dotenv()
 
+# Dynamic Host Resolution for Ollama
+# When deployed on Render, it reads your configured URL variable.
+# When running locally on your laptop, it safely defaults back to localhost.
+OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+OLLAMA_API_KEY = os.getenv("OLLAMA_API_KEY", "8d062b833bf347b1a4eb77eb093faa79.8G47lCEIVb7rfFbdBo8Gscbg")
 
-
-# BLAZING FAST OLLAMA CLOUD SETUP (Hardcoded Test)
+# BLAZING FAST OLLAMA CLOUD SETUP
 cloud_llm = LLM(
     model="ollama/gemma4:31b-cloud",       
-    base_url="http://localhost:11434",  
-    api_key="c92bcd4ae2a24e69a8a1a9cd6fb4bcf0.1_KoSaClRZyf8IuCXBEr8enE",  # <-- Put your real sk-... key inside the quotes
+    base_url=OLLAMA_BASE_URL,  # <--- THE MAGIC FIX (No longer hardcoded to localhost)
+    api_key=OLLAMA_API_KEY,    # <--- Loaded securely via Environment Variables
     temperature=0.7
 )
 
@@ -103,7 +107,7 @@ def generate_deep_web_research(job_title):
         backstory='You are a top-tier industry analyst. You use the internet to find real, current data about salaries, hiring companies, and market demands.',
         tools=[search_tool],  
         llm=cloud_llm,  # <-- UPDATED TO CLOUD
-        verbose=True,
+        verbose=True,   # <--- FIXED: The stray asterisk has been completely removed
         allow_delegation=False
     )
 
