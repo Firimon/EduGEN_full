@@ -5,6 +5,7 @@ mysql-connector-python
 Werkzeug
 Flask-Mail
 itsdangerous
+gunicorn
 
 # --- Security ---
 python-dotenv
