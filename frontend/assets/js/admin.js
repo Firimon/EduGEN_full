@@ -1,4 +1,4 @@
-const API_BASE_URL = "https://edugen-backend.onrender.com";
+const API_BASE_URL = "https://edugen-full.onrender.com";
 
 document.addEventListener("DOMContentLoaded", () => {
     

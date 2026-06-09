@@ -271,7 +271,7 @@
 
             // --- FETCH DATA FROM MYSQL ---
             try {
-                const response = await fetch(`https://edugen-backend.onrender.com/api/profile/${user.id}`);
+                const response = await fetch(`https://edugen-full.onrender.com/api/profile/${user.id}`);
                 const data = await response.json();
                 
                 if (data.success && data.profile) {
@@ -311,7 +311,7 @@
                 };
 
                 try {
-                    const res = await fetch("https://edugen-backend.onrender.com/api/profile", {
+                    const res = await fetch("https://edugen-full.onrender.com/api/profile", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify(profileData)

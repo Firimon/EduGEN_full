@@ -558,7 +558,7 @@
 
             async function fetchJobsFromDatabase() {
                 try {
-                    const response = await fetch("https://edugen-backend.onrender.com/api/admin/jobs");
+                    const response = await fetch("https://edugen-full.onrender.com/api/admin/jobs");
                     const data = await response.json();
 
                     if (data.success) {
@@ -745,7 +745,7 @@
                         }
                         saveBtn.textContent = "Saving...";
                         try {
-                            const response = await fetch("https://edugen-backend.onrender.com/api/save_job", {
+                            const response = await fetch("https://edugen-full.onrender.com/api/save_job", {
                                 method: "POST",
                                 headers: { "Content-Type": "application/json" },
                                 body: JSON.stringify({ user_id: user.id, job_title: job.title })
@@ -760,7 +760,7 @@
                                 saveBtn.textContent = "Save Role";
                             }
                         } catch (error) {
-                            alert("Make sure your Flask server is running at https://edugen-backend.onrender.com");
+                            alert("Make sure your Flask server is running at https://edugen-full.onrender.com");
                             saveBtn.textContent = "Save Role";
                         }
                     };
@@ -845,7 +845,7 @@
                 `;
 
                 try {
-                    const response = await fetch("https://edugen-backend.onrender.com/api/research_job", {
+                    const response = await fetch("https://edugen-full.onrender.com/api/research_job", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ 
@@ -904,7 +904,7 @@
                 } catch (e) { }
 
                 try {
-                    const response = await fetch("https://edugen-backend.onrender.com/api/analyze_job", {
+                    const response = await fetch("https://edugen-full.onrender.com/api/analyze_job", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({
