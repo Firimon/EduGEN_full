@@ -1,9 +1,24 @@
 import os
+from pathlib import Path
+from dotenv import load_dotenv
 from langchain_ollama import ChatOllama
 from langchain_core.prompts.prompt import PromptTemplate
 
-# Initialize the local Gemma model
-llm = ChatOllama(model="gemma2:2b", temperature=0.2) # Slight temperature for better writing
+# 🚀 Load keys securely
+env_path = Path(__file__).resolve().parent.parent / '.env'
+load_dotenv(dotenv_path=env_path, override=True)
+
+# Dynamic Host Resolution for Ollama
+# When deployed on Render, it reads your configured cloud URL variable.
+# When running locally on your laptop, it safely defaults back to localhost.
+OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+
+print(f"☁️ Connecting AI Tools to Cloud Gemma 4 via: {OLLAMA_BASE_URL}")
+llm = ChatOllama(
+    model="gemma4:31b-cloud",  # <--- UPDATED TO CLOUD BRAIN
+    base_url=OLLAMA_BASE_URL,  # Points to Cloud on Render, Localhost at home
+    temperature=0.2            # Slight temperature for high-quality writing
+)
 
 def optimize_resume(resume_text):
     print("📝 Running Resume Optimizer...")
