@@ -778,19 +778,26 @@ def generate_ai_options():
         # 1. TRIGGER THE NEW CREWAI OPTIONS GENERATOR
         response = generate_assessment_options_crew(scenario)
         
-        # 2. Clean up any accidental markdown code wrappers from the LLM string
-        clean_response = response.strip()
-        if clean_response.startswith("```"):
-            clean_response = clean_response.split("\n", 1)[1].rsplit("\n", 1)[0].strip()
-            if clean_response.startswith("json"):
-                clean_response = clean_response[4:].strip()
-
-        # 3. PARSE INTO RAW JSON FOR FRONTEND RENDERING
+        # Print the RAW output to the terminal so we can see what Gemma is actually saying!
+        print(f"\n--- RAW CREWAI OUTPUT ---\n{response}\n-------------------------\n")
+        
+        # 2. AGGRESSIVE JSON EXTRACTION (The Fix!)
         import json
         import random
-        ai_responses = json.loads(clean_response)
+        import re
         
-        # Shuffle choices so 'Logic' is not always index 0
+        # This regex searches the entire response and grabs everything from the first '[' to the last ']'
+        match = re.search(r'\[.*\]', response, re.DOTALL)
+        
+        if not match:
+            raise ValueError("Could not find a valid JSON array in the LLM output.")
+            
+        clean_json_string = match.group(0)
+
+        # 3. PARSE INTO RAW JSON FOR FRONTEND RENDERING
+        ai_responses = json.loads(clean_json_string)
+        
+        # Shuffle choices so 'Logic' is not always the first option
         random.shuffle(ai_responses)
 
         return jsonify({
@@ -800,7 +807,7 @@ def generate_ai_options():
 
     except Exception as e:
         print(f"🚨 Dynamic Options Engine Error: {e}")
-        # Secure fallback array if the LLM api fails or runs into a network timeout
+        # Secure fallback array if the LLM api fails or returns invalid text
         fallback_responses = [
             {"trait": "logic", "text": "Analyze requirements and optimize structural technical logic."},
             {"trait": "design", "text": "Prioritize user-centric wireframing, interface layout, and frontend styling."},
