@@ -1,6 +1,5 @@
 import os
 from dotenv import load_dotenv
-# 🚨 STEP 1: Ensure you are importing LLM directly from crewai
 from crewai import Agent, Task, Crew, Process, LLM
 from crewai.tools import BaseTool  
 from langchain_community.tools import DuckDuckGoSearchRun
@@ -8,16 +7,18 @@ from langchain_community.tools import DuckDuckGoSearchRun
 # 🚀 Load keys securely
 load_dotenv()
 
-# Dynamic Host Resolution for Ollama
 OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
 OLLAMA_API_KEY = os.getenv("OLLAMA_API_KEY", "a906e8ce381d42ec86e63a62be531214.dMe0FP2x6bhDa3OonqxODZr8")
 
-# 🚨 STEP 2: Use CrewAI's native LLM wrapper with the 'openai/' proxy prefix
+# ☁️ CLOUD GEMMA 4 SETUP - PURE OLLAMA
 cloud_llm = LLM(
-    model="ollama/gemma4:31b-cloud",  # 'openai/' tells LiteLLM to pass the API Key as a Bearer Token
-    base_url=OLLAMA_BASE_URL,         # Connects cleanly to your remote cloud host
-    api_key=OLLAMA_API_KEY,           # Automatically injected into your HTTP headers
-    temperature=0.7
+    model="ollama/gemma4:31b-cloud",  # Satisfies CrewAI's strict prefix rule
+    base_url=OLLAMA_BASE_URL,
+    temperature=0.7,
+    # 🔥 THE FIX: Forcefully inject the API key so CrewAI cannot strip it out
+    extra_headers={
+        "Authorization": f"Bearer {OLLAMA_API_KEY}"
+    }
 )
 
 # ==========================================
@@ -31,8 +32,8 @@ class WebSearchTool(BaseTool):
         search = DuckDuckGoSearchRun()
         return search.run(query)
 
+# Initialize our custom tool!
 search_tool = WebSearchTool()
-
 
 def generate_fit_analysis(job_title, user_skills, academic_level):
     """
