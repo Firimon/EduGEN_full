@@ -16,13 +16,13 @@ OLLAMA_API_KEY = os.getenv("OLLAMA_API_KEY", "8d062b833bf347b1a4eb77eb093faa79.8
 # BLAZING FAST OLLAMA CLOUD SETUP
 cloud_llm = LLM(
     model="ollama/gemma4:31b-cloud",       
-    base_url=OLLAMA_BASE_URL,  # <--- THE MAGIC FIX (No longer hardcoded to localhost)
-    api_key=OLLAMA_API_KEY,    # <--- Loaded securely via Environment Variables
+    base_url=OLLAMA_BASE_URL,  
+    api_key=OLLAMA_API_KEY,    
     temperature=0.7
 )
 
 # ==========================================
-# CUSTOM NATIVE CREWAI SEARCH TOOL (Fixes the Pydantic Error)
+# CUSTOM NATIVE CREWAI SEARCH TOOL 
 # ==========================================
 class WebSearchTool(BaseTool):
     name: str = "Live Web Search"
@@ -40,7 +40,6 @@ def generate_fit_analysis(job_title, user_skills, academic_level):
     """
     Spawns a CrewAI panel to analyze a user's fit for a specific job.
     """
-    
     # ==========================================
     # 1. DEFINE THE AGENTS
     # ==========================================
@@ -50,7 +49,7 @@ def generate_fit_analysis(job_title, user_skills, academic_level):
         backstory='You are an advanced Applicant Tracking System used by top tech companies. You know exactly what recruiters are looking for.',
         verbose=True,
         allow_delegation=False,
-        llm=cloud_llm  # <-- UPDATED TO CLOUD
+        llm=cloud_llm  
     )
 
     auditor_agent = Agent(
@@ -59,7 +58,7 @@ def generate_fit_analysis(job_title, user_skills, academic_level):
         backstory='You are a brutally honest but supportive career coach. Your job is to tell the student exactly what they are missing to get hired.',
         verbose=True,
         allow_delegation=False,
-        llm=cloud_llm  # <-- UPDATED TO CLOUD
+        llm=cloud_llm  
     )
 
     # ==========================================
@@ -95,9 +94,8 @@ def generate_fit_analysis(job_title, user_skills, academic_level):
 def generate_deep_web_research(job_title):
     """
     Spawns a single CrewAI agent equipped with a search tool to browse the 
-    live internet autonomously using Gemma 4's native function calling.
+    live internet autonomously.
     """
-    
     # ==========================================
     # 1. DEFINE THE RESEARCH AGENT (WITH SEARCH TOOL)
     # ==========================================
@@ -106,7 +104,7 @@ def generate_deep_web_research(job_title):
         goal=f'Scour the live internet for the most up-to-date information on the {job_title} role.',
         backstory='You are a top-tier industry analyst. You use the internet to find real, current data about salaries, hiring companies, and market demands.',
         tools=[search_tool],  
-        llm=cloud_llm,  # <-- UPDATED TO CLOUD
+        llm=cloud_llm,  
         verbose=True,   
         allow_delegation=False
     )
@@ -185,5 +183,61 @@ def generate_assessment_options_crew(scenario):
 
     print(f"📝 CrewAI is preparing assessment options for scenario text...")
     result = assessment_crew.kickoff()
+    
+    return str(result)
+
+
+# ==========================================
+# NEW FEATURE: ADMIN QUESTION GENERATOR VIA CREWAI
+# ==========================================
+def generate_admin_question_crew(trait):
+    """
+    Spawns a specialized CrewAI agent to dynamically create a new assessment
+    question for the admin panel database.
+    """
+    trait_mapping = {
+        "logic": "Logical, analytical, backend programming, and data analysis.",
+        "design": "Creative, UI/UX design, frontend development, and visual aesthetics.",
+        "business": "Business strategy, project management, leadership, and product planning.",
+        "software_engineer": "Software Engineering, covering writing clean code, data structures, debugging code, and system architecture structures.",
+        "data_analyst": "Data Analytics, focusing on data manipulation, database querying, statistical calculations, and graph interpretation.",
+        "ui_ux_designer": "UI/UX Design, including wireframing, component accessibility, interface aesthetics, and user research empathy.",
+        "cybersecurity_analyst": "Cybersecurity, focusing on network vulnerability analysis, threat mitigation, and evaluating script execution risks."
+    }
+    
+    target_trait = trait_mapping.get(trait, "General technology")
+
+    admin_agent = Agent(
+        role='Assessment Database Engineer',
+        goal='Generate a single, high-quality assessment statement testing a specific technical trait.',
+        backstory='You design psychometric questions for an educational platform to evaluate student career aptitudes.',
+        verbose=False,
+        allow_delegation=False,
+        llm=cloud_llm
+    )
+
+    admin_task = Task(
+        description=f"""
+        Write ONE single, high-quality assessment statement designed to test if a student has a strong situational aptitude or preference for: {target_trait}
+        
+        Rules:
+        - Write it in the first person (e.g., "I enjoy...", "When presented with...").
+        - Make the text represent a realistic technical challenge, scenario, or preference matching that specialization.
+        - It must be a statement that a user can strongly agree or disagree with.
+        - Keep it under 2 sentences.
+        - Do not include quotes, prefixes, or any extra conversational text. Output ONLY the raw statement text.
+        """,
+        expected_output='A single sentence containing the assessment statement.',
+        agent=admin_agent
+    )
+
+    admin_crew = Crew(
+        agents=[admin_agent],
+        tasks=[admin_task],
+        verbose=False
+    )
+
+    print(f"📝 CrewAI is generating an admin assessment question for: {trait}")
+    result = admin_crew.kickoff()
     
     return str(result)
