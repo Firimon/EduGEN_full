@@ -1,6 +1,7 @@
 import os
 from dotenv import load_dotenv
-from crewai import Agent, Task, Crew, Process, LLM
+from crewai import Agent, Task, Crew, Process
+from langchain_community.chat_models import ChatOllama  # NATIVE CHATOLLAMA IMPORT
 from crewai.tools import BaseTool  
 from langchain_community.tools import DuckDuckGoSearchRun
 
@@ -11,12 +12,13 @@ load_dotenv()
 OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
 OLLAMA_API_KEY = os.getenv("OLLAMA_API_KEY", "a906e8ce381d42ec86e63a62be531214.dMe0FP2x6bhDa3OonqxODZr8")
 
-# BLAZING FAST OLLAMA CLOUD SETUP
-cloud_llm = LLM(
-    model="ollama/gemma4:31b-cloud",       
-    base_url=OLLAMA_BASE_URL,  
-    api_key=OLLAMA_API_KEY,    
-    temperature=0.7
+# BLAZING FAST OLLAMA CLOUD SETUP (Bypassing LiteLLM)
+cloud_llm = ChatOllama(
+    model="gemma4:31b-cloud",  # Removed 'ollama/' prefix. ChatOllama passes this raw.
+    base_url=OLLAMA_BASE_URL,
+    temperature=0.7,
+    # Explicitly inject the API key into the request header for cloud auth
+    headers={"Authorization": f"Bearer {OLLAMA_API_KEY}"} 
 )
 
 # ==========================================
