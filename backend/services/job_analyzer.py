@@ -3,7 +3,9 @@ from dotenv import load_dotenv
 from crewai import Agent, Task, Crew, Process
 from crewai.tools import BaseTool  
 from langchain_community.tools import DuckDuckGoSearchRun
-from langchain_openai import ChatOpenAI  # Powered by your stable Ollama endpoint
+
+# THE EXACT SAME IMPORT THAT WORKS IN AI_TOOLS.PY
+from langchain_ollama import ChatOllama 
 
 # 🚀 Load keys securely
 load_dotenv()
@@ -11,12 +13,11 @@ load_dotenv()
 # Dynamic Host Resolution for Ollama
 OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
 
-# BLAZING FAST OLLAMA CLOUD SETUP
-# Wrapping Ollama in ChatOpenAI bypasses LiteLLM provider constraints completely!
-cloud_llm = ChatOpenAI(
+# ☁️ CLOUD GEMMA 4 SETUP
+# Identical to your ai_tools.py setup for perfect compatibility
+cloud_llm = ChatOllama(
     model="gemma4:31b-cloud",  
-    base_url=f"{OLLAMA_BASE_URL.rstrip('/')}/v1",  # Connects to Ollama's OpenAI API layer
-    api_key="ollama",  
+    base_url=OLLAMA_BASE_URL,
     temperature=0.7
 )
 
@@ -64,7 +65,7 @@ def generate_fit_analysis(job_title, user_skills, academic_level):
     )
 
     audit_task = Task(
-        description=f'Read the ATS requirements. Read the user skills: {user_skills}. Provide a \"Match Report\" with three sections: 1. Match Percentage (estimate). 2. What they already have. 3. What they are missing (Skill Gaps). Keep it brief and encouraging.',
+        description=f'Read the ATS requirements. Read the user skills: {user_skills}. Provide a "Match Report" with three sections: 1. Match Percentage (estimate). 2. What they already have. 3. What they are missing (Skill Gaps). Keep it brief and encouraging.',
         expected_output='A formatted Fit Analysis report with a Match Percentage and Skill Gaps.',
         agent=auditor_agent
     )
