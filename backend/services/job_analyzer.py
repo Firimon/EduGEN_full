@@ -107,7 +107,7 @@ def generate_deep_web_research(job_title):
         backstory='You are a top-tier industry analyst. You use the internet to find real, current data about salaries, hiring companies, and market demands.',
         tools=[search_tool],  
         llm=cloud_llm,  # <-- UPDATED TO CLOUD
-        verbose=True,   # <--- FIXED: The stray asterisk has been completely removed
+        verbose=True,   
         allow_delegation=False
     )
 
@@ -137,5 +137,53 @@ def generate_deep_web_research(job_title):
 
     print(f"🌐 Gemma 4 Cloud is autonomously browsing the web for: {job_title}...")
     result = crew.kickoff()
+    
+    return str(result)
+
+
+# ==========================================
+# NEW FEATURE: ASSESSMENT GENERATION VIA CREWAI
+# ==========================================
+def generate_assessment_options_crew(scenario):
+    """
+    Spawns a specialized CrewAI agent to dynamically create contextual answer 
+    options for assessment.html, properly structured for the frontend.
+    """
+    psychometric_agent = Agent(
+        role='Psychometric Assessment Designer',
+        goal='Create highly relevant, structured behavioral choices based on a student scenario context.',
+        backstory='You are an expert psychometrician and talent development strategist. You design options that map out clean career indicators.',
+        verbose=False,
+        allow_delegation=False,
+        llm=cloud_llm
+    )
+
+    assessment_task = Task(
+        description=f"""
+        An assessment scenario has been loaded: "{scenario}"
+
+        Generate exactly 4 unique answer options contextualized perfectly around this situation. 
+        Each option must align to one distinct professional mindset trait:
+        - logic: Focused on algorithms, structured backend logic, database operations, or optimization.
+        - design: Focused on user empathy, front-end visual elements, styling consistency, or interface layout.
+        - business: Focused on project milestones, scope tracking, marketplace deployment, or financial impact.
+        - social: Focused on documentation updates, team code review harmony, or stakeholder feedback alignment.
+
+        Formatting constraints:
+        - Keep option text brief (under 12 words).
+        - Provide ONLY a clean, valid raw JSON array block. No extra conversation text.
+        """,
+        expected_output='A raw JSON array containing 4 objects with keys: "trait" and "text".',
+        agent=psychometric_agent
+    )
+
+    assessment_crew = Crew(
+        agents=[psychometric_agent],
+        tasks=[assessment_task],
+        verbose=False
+    )
+
+    print(f"📝 CrewAI is preparing assessment options for scenario text...")
+    result = assessment_crew.kickoff()
     
     return str(result)
