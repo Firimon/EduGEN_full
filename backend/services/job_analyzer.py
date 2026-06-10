@@ -1,22 +1,21 @@
 import os
 from dotenv import load_dotenv
-from crewai import Agent, Task, Crew, Process
+from crewai import Agent, Task, Crew, Process, LLM
 from crewai.tools import BaseTool  
 from langchain_community.tools import DuckDuckGoSearchRun
-from langchain_ollama import ChatOllama  # <--- THE MAGIC FIX
 
 # 🚀 Load keys securely
 load_dotenv()
 
 # Dynamic Host Resolution for Ollama
 OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+OLLAMA_API_KEY = os.getenv("OLLAMA_API_KEY", "8d062b833bf347b1a4eb77eb093faa79.8G47lCEIVb7rfFbdBo8Gscbg")
 
 # BLAZING FAST OLLAMA CLOUD SETUP
-# By switching this to ChatOllama, it uses the exact same bulletproof 
-# connection as your graph engine to prevent network crashes!
-cloud_llm = ChatOllama(
+cloud_llm = LLM(
     model="ollama/gemma4:31b-cloud",       
     base_url=OLLAMA_BASE_URL,  
+    api_key=OLLAMA_API_KEY,    
     temperature=0.7
 )
 
@@ -39,9 +38,6 @@ def generate_fit_analysis(job_title, user_skills, academic_level):
     """
     Spawns a CrewAI panel to analyze a user's fit for a specific job.
     """
-    # ==========================================
-    # 1. DEFINE THE AGENTS
-    # ==========================================
     ats_agent = Agent(
         role='ATS System Decoder',
         goal=f'Identify the top 5 mandatory skills and technologies required for a {job_title} role.',
@@ -60,9 +56,6 @@ def generate_fit_analysis(job_title, user_skills, academic_level):
         llm=cloud_llm  
     )
 
-    # ==========================================
-    # 2. DEFINE THE TASKS
-    # ==========================================
     ats_task = Task(
         description=f'List the definitive technical and soft skills required to be hired as a {job_title}.',
         expected_output='A concise list of required skills.',
@@ -75,9 +68,6 @@ def generate_fit_analysis(job_title, user_skills, academic_level):
         agent=auditor_agent
     )
 
-    # ==========================================
-    # 3. FORM THE CREW
-    # ==========================================
     analysis_crew = Crew(
         agents=[ats_agent, auditor_agent],
         tasks=[ats_task, audit_task],
@@ -92,12 +82,8 @@ def generate_fit_analysis(job_title, user_skills, academic_level):
 
 def generate_deep_web_research(job_title):
     """
-    Spawns a single CrewAI agent equipped with a search tool to browse the 
-    live internet autonomously.
+    Spawns a single CrewAI agent equipped with a search tool to browse the live internet autonomously.
     """
-    # ==========================================
-    # 1. DEFINE THE RESEARCH AGENT (WITH SEARCH TOOL)
-    # ==========================================
     web_researcher = Agent(
         role='Senior Market Research Analyst',
         goal=f'Scour the live internet for the most up-to-date information on the {job_title} role.',
@@ -108,9 +94,6 @@ def generate_deep_web_research(job_title):
         allow_delegation=False
     )
 
-    # ==========================================
-    # 2. DEFINE THE RESEARCH TASK
-    # ==========================================
     research_task = Task(
         description=f"""
         Use your search tool to browse the internet and find the following for a {job_title} role in the current year:
@@ -123,9 +106,6 @@ def generate_deep_web_research(job_title):
         agent=web_researcher
     )
 
-    # ==========================================
-    # 3. FORM THE CREW
-    # ==========================================
     crew = Crew(
         agents=[web_researcher],
         tasks=[research_task],
@@ -138,13 +118,9 @@ def generate_deep_web_research(job_title):
     return str(result)
 
 
-# ==========================================
-# NEW FEATURE: ASSESSMENT GENERATION VIA CREWAI
-# ==========================================
 def generate_assessment_options_crew(scenario):
     """
-    Spawns a specialized CrewAI agent to dynamically create contextual answer 
-    options for assessment.html, properly structured for the frontend.
+    Spawns a specialized CrewAI agent to dynamically create contextual answer options for assessment.html.
     """
     psychometric_agent = Agent(
         role='Psychometric Assessment Designer',
@@ -186,13 +162,9 @@ def generate_assessment_options_crew(scenario):
     return str(result)
 
 
-# ==========================================
-# NEW FEATURE: ADMIN QUESTION GENERATOR VIA CREWAI
-# ==========================================
 def generate_admin_question_crew(trait):
     """
-    Spawns a specialized CrewAI agent to dynamically create a new assessment
-    question for the admin panel database.
+    Spawns a specialized CrewAI agent to dynamically create a new assessment question for the admin panel database.
     """
     trait_mapping = {
         "logic": "Logical, analytical, backend programming, and data analysis.",
