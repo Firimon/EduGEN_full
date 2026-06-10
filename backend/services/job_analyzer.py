@@ -1,23 +1,22 @@
 import os
 from dotenv import load_dotenv
-from crewai import Agent, Task, Crew, Process, LLM
+from crewai import Agent, Task, Crew, Process
 from crewai.tools import BaseTool  
 from langchain_community.tools import DuckDuckGoSearchRun
+from langchain_ollama import ChatOllama  # <--- THE MAGIC FIX
 
 # 🚀 Load keys securely
 load_dotenv()
 
 # Dynamic Host Resolution for Ollama
-# When deployed on Render, it reads your configured URL variable.
-# When running locally on your laptop, it safely defaults back to localhost.
 OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
-OLLAMA_API_KEY = os.getenv("OLLAMA_API_KEY", "8d062b833bf347b1a4eb77eb093faa79.8G47lCEIVb7rfFbdBo8Gscbg")
 
 # BLAZING FAST OLLAMA CLOUD SETUP
-cloud_llm = LLM(
-    model="ollama/gemma4:31b-cloud",       
+# By switching this to ChatOllama, it uses the exact same bulletproof 
+# connection as your graph engine to prevent network crashes!
+cloud_llm = ChatOllama(
+    model="gemma4:31b-cloud",       
     base_url=OLLAMA_BASE_URL,  
-    api_key=OLLAMA_API_KEY,    
     temperature=0.7
 )
 
