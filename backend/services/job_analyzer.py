@@ -1,24 +1,23 @@
 import os
 from dotenv import load_dotenv
 from crewai import Agent, Task, Crew, Process
-from langchain_community.chat_models import ChatOllama  # NATIVE CHATOLLAMA IMPORT
 from crewai.tools import BaseTool  
 from langchain_community.tools import DuckDuckGoSearchRun
+from langchain_openai import ChatOpenAI  # Powered by your stable Ollama endpoint
 
 # 🚀 Load keys securely
 load_dotenv()
 
 # Dynamic Host Resolution for Ollama
 OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
-OLLAMA_API_KEY = os.getenv("OLLAMA_API_KEY", "a906e8ce381d42ec86e63a62be531214.dMe0FP2x6bhDa3OonqxODZr8")
 
-# BLAZING FAST OLLAMA CLOUD SETUP (Bypassing LiteLLM)
-cloud_llm = ChatOllama(
-    model="gemma4:31b-cloud",  # Removed 'ollama/' prefix. ChatOllama passes this raw.
-    base_url=OLLAMA_BASE_URL,
-    temperature=0.7,
-    # Explicitly inject the API key into the request header for cloud auth
-    headers={"Authorization": f"Bearer {OLLAMA_API_KEY}"} 
+# BLAZING FAST OLLAMA CLOUD SETUP
+# Wrapping Ollama in ChatOpenAI bypasses LiteLLM provider constraints completely!
+cloud_llm = ChatOpenAI(
+    model="gemma4:31b-cloud",  
+    base_url=f"{OLLAMA_BASE_URL.rstrip('/')}/v1",  # Connects to Ollama's OpenAI API layer
+    api_key="ollama",  
+    temperature=0.7
 )
 
 # ==========================================
@@ -65,7 +64,7 @@ def generate_fit_analysis(job_title, user_skills, academic_level):
     )
 
     audit_task = Task(
-        description=f'Read the ATS requirements. Read the user skills: {user_skills}. Provide a "Match Report" with three sections: 1. Match Percentage (estimate). 2. What they already have. 3. What they are missing (Skill Gaps). Keep it brief and encouraging.',
+        description=f'Read the ATS requirements. Read the user skills: {user_skills}. Provide a \"Match Report\" with three sections: 1. Match Percentage (estimate). 2. What they already have. 3. What they are missing (Skill Gaps). Keep it brief and encouraging.',
         expected_output='A formatted Fit Analysis report with a Match Percentage and Skill Gaps.',
         agent=auditor_agent
     )
