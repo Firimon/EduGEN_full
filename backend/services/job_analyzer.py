@@ -9,7 +9,7 @@ load_dotenv()
 
 # Dynamic Host Resolution for Ollama
 OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
-OLLAMA_API_KEY = os.getenv("OLLAMA_API_KEY", "8d062b833bf347b1a4eb77eb093faa79.8G47lCEIVb7rfFbdBo8Gscbg")
+OLLAMA_API_KEY = os.getenv("OLLAMA_API_KEY", "a906e8ce381d42ec86e63a62be531214.dMe0FP2x6bhDa3OonqxODZr8")
 
 # BLAZING FAST OLLAMA CLOUD SETUP
 cloud_llm = LLM(
