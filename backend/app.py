@@ -6,14 +6,14 @@ from flask_cors import CORS
 from flask_mail import Mail, Message
 from itsdangerous import URLSafeTimedSerializer
 import mysql.connector
+
+# IMPORT ALL AI SERVICES
 from services.graph_query import ask_edugen
 from services.ai_tools import optimize_resume, analyze_skills
 from services.mock_interview import generate_interview_panel
-from services.job_analyzer import generate_fit_analysis
+from services.job_analyzer import generate_fit_analysis, generate_deep_web_research, generate_assessment_options_crew, generate_admin_question_crew
 from datetime import datetime
 from neo4j import GraphDatabase
-from services.job_analyzer import cloud_llm
-
 
 # LOAD THE HIDDEN SAFE (.env file)
 load_dotenv()
@@ -762,7 +762,7 @@ def save_profile():
         cursor.close()
         conn.close()
 
- # --- AI ASSESSMENT GENERATOR (FULLY DYNAMIC LLM ROUTE) ---
+ # --- AI ASSESSMENT GENERATOR (FULLY DYNAMIC CREWAI ROUTE) ---
 @app.route('/api/generate_options', methods=['POST', 'OPTIONS'])
 def generate_ai_options():
     if request.method == 'OPTIONS':
@@ -775,35 +775,10 @@ def generate_ai_options():
         return jsonify({"success": False, "error": "No scenario provided"}), 400
 
     try:
-        # 1. CONSTRUCT A STRICT STRUCTURED PROMPT FOR YOUR LLM
-        prompt_text = f"""You are a psychometric engine for the EduGEN Career Platform.
-A student is responding to this specific personal statement or situational challenge:
-"{scenario}"
-
-Generate exactly 4 distinct, contextual answer options tailored to this situation. Each option must reflect one of these target mindsets:
-- logic: Action focused on backend code, algorithmic optimization, or data logic.
-- design: Action focused on user interface, aesthetics, styling, or frontend empathy.
-- business: Action focused on project scope, roadmaps, market viability, or product strategy.
-- social: Action focused on communication, team collaboration, or stakeholder alignment.
-
-Rules:
-- Keep options under 12 words. Make them concise and natural.
-- DO NOT repeat the scenario text itself.
-- Customize them to match the technical context of the statement.
-- Output ONLY a raw valid JSON array containing exactly 4 objects structured like this:
-[
-  {{"trait": "logic", "text": "Short customized response description"}},
-  {{"trait": "design", "text": "Short customized response description"}},
-  {{"trait": "business", "text": "Short customized response description"}},
-  {{"trait": "social", "text": "Short customized response description"}}
-]
-Do not wrap your output in ```json markdown formatting blocks. Return the raw string directly.
-"""
-
-        # 2. CALL YOUR LIVE CLOUD LLM
-        response = cloud_llm.call(prompt_text)
+        # 1. TRIGGER THE NEW CREWAI OPTIONS GENERATOR
+        response = generate_assessment_options_crew(scenario)
         
-        # Clean up any accidental markdown code wrappers from the LLM string
+        # 2. Clean up any accidental markdown code wrappers from the LLM string
         clean_response = response.strip()
         if clean_response.startswith("```"):
             clean_response = clean_response.split("\n", 1)[1].rsplit("\n", 1)[0].strip()
@@ -853,9 +828,6 @@ def research_job():
         return jsonify({"success": False, "error": "Missing job title"}), 400
 
     try:
-        # Import your new deep research function (we will create this next)
-        from services.job_analyzer import generate_deep_web_research
-        
         # Trigger the web-browsing agent
         report = generate_deep_web_research(job_title)
 
@@ -952,31 +924,8 @@ def generate_assessment_question():
         data = request.json
         trait = data.get('trait_category', 'logic')
 
-        # Expanded to support role-specific prompt guidance
-        trait_mapping = {
-            "logic": "Logical, analytical, backend programming, and data analysis.",
-            "design": "Creative, UI/UX design, frontend development, and visual aesthetics.",
-            "business": "Business strategy, project management, leadership, and product planning.",
-            "software_engineer": "Software Engineering, covering writing clean code, data structures, debugging code, and system architecture structures.",
-            "data_analyst": "Data Analytics, focusing on data manipulation, database querying, statistical calculations, and graph interpretation.",
-            "ui_ux_designer": "UI/UX Design, including wireframing, component accessibility, interface aesthetics, and user research empathy.",
-            "cybersecurity_analyst": "Cybersecurity, focusing on network vulnerability analysis, threat mitigation, and evaluating script execution risks."
-        }
-        
-        target_trait = trait_mapping.get(trait, "General technology")
-
-        prompt_text = f"""You are an expert psychometric assessment designer.
-        Write ONE single, high-quality assessment statement designed to test if a student has a strong situational aptitude or preference for: {target_trait}
-        
-        Rules:
-        - Write it in the first person (e.g., "I enjoy...", "When presented with...").
-        - Make the text represent a realistic technical challenge, scenario, or preference matching that specialization.
-        - It must be a statement that a user can strongly agree or disagree with.
-        - Keep it under 2 sentences.
-        - Do not include quotes, prefixes, or any extra conversational text. Just output the statement directly.
-        """
-        
-        response = cloud_llm.call(prompt_text)
+        # Trigger your dedicated Admin Panel CrewAI Agent
+        response = generate_admin_question_crew(trait)
         clean_question = response.replace('"', '').strip()
 
         return jsonify({"success": True, "generated_question": clean_question})
