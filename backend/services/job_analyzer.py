@@ -15,7 +15,7 @@ OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
 # By switching this to ChatOllama, it uses the exact same bulletproof 
 # connection as your graph engine to prevent network crashes!
 cloud_llm = ChatOllama(
-    model="gemma4:31b-cloud",       
+    model="ollama/gemma4:31b-cloud",       
     base_url=OLLAMA_BASE_URL,  
     temperature=0.7
 )
