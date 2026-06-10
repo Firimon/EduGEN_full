@@ -14,7 +14,7 @@ OLLAMA_API_KEY = os.getenv("OLLAMA_API_KEY", "a906e8ce381d42ec86e63a62be531214.d
 
 # 🚨 STEP 2: Use CrewAI's native LLM wrapper with the 'openai/' proxy prefix
 cloud_llm = LLM(
-    model="openai/gemma4:31b-cloud",  # 'openai/' tells LiteLLM to pass the API Key as a Bearer Token
+    model="ollama/gemma4:31b-cloud",  # 'openai/' tells LiteLLM to pass the API Key as a Bearer Token
     base_url=OLLAMA_BASE_URL,         # Connects cleanly to your remote cloud host
     api_key=OLLAMA_API_KEY,           # Automatically injected into your HTTP headers
     temperature=0.7
